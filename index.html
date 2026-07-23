@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="姚小八工作台">
+<meta name="theme-color" content="#4CAF50">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<title>姚小八工作台</title>
+<style>
+:root {
+  --green: #4CAF50;
+  --green-dark: #388E3C;
+  --green-light: #E8F5E9;
+  --blue: #2196F3;
+  --blue-dark: #1565C0;
+  --blue-light: #E3F2FD;
+  --orange: #FF9800;
+  --orange-dark: #E65100;
+  --orange-light: #FFF3E0;
+  --purple: #9C27B0;
+  --purple-dark: #6A1B9A;
+  --purple-light: #F3E5F5;
+  --bg: #F5F5F5;
+  --card: #FFFFFF;
+  --text: #333333;
+  --text-light: #888888;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  height: 100%; width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.page { display: none; flex-direction: column; height: 100%; }
+.page.active { display: flex; }
+
+/* Top Bar */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: calc(12px + var(--safe-top)) 16px 12px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar .title { font-size: 18px; font-weight: 700; }
+.topbar .back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg); border: none; font-size: 20px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--text);
+}
+.topbar .back-btn:active { background: #e0e0e0; }
+
+/* Page Content */
+.page-content {
+  flex: 1; overflow-y: auto; padding: 16px;
+  padding-bottom: calc(24px + var(--safe-bottom));
+}
+
+/* Home Page */
+.home-header {
+  text-align: center; padding: calc(24px + var(--safe-top)) 16px 8px;
+}
+.home-header .app-icon {
+  width: 72px; height: 72px; border-radius: 18px;
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 12px;
+  box-shadow: 0 4px 16px rgba(76,175,80,0.3);
+}
+.home-header .app-icon span {
+  color: #fff; font-size: 36px; font-weight: 700;
+}
+.home-header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.home-header .subtitle { font-size: 13px; color: var(--text-light); }
+
+/* Module Grid */
+.module-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  padding: 8px 16px calc(24px + var(--safe-bottom));
+}
+.module-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 20px 16px; box-shadow: var(--shadow);
+  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+  position: relative; overflow: hidden;
+}
+.module-card:active { transform: scale(0.97); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.module-card .card-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin-bottom: 12px;
+}
+.module-card .card-icon.green { background: var(--green-light); }
+.module-card .card-icon.blue { background: var(--blue-light); }
+.module-card .card-icon.orange { background: var(--orange-light); }
+.module-card .card-icon.purple { background: var(--purple-light); }
+.module-card .card-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.module-card .card-desc { font-size: 12px; color: var(--text-light); line-height: 1.4; }
+.module-card .card-badge {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 11px; padding: 3px 8px; border-radius: 20px;
+  font-weight: 600;
+}
+.badge-green { background: var(--green-light); color: var(--green-dark); }
+.badge-blue { background: var(--blue-light); color: var(--blue-dark); }
+.badge-orange { background: var(--orange-light); color: var(--orange-dark); }
+.badge-purple { background: var(--purple-light); color: var(--purple-dark); }
+
+/* Section headers */
+.section-title {
+  font-size: 14px; font-weight: 700; color: var(--text);
+  margin: 16px 0 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.section-title::before {
+  content: ''; width: 4px; height: 16px; border-radius: 2px;
+  background: var(--green);
+}
+
+/* ===== DAILY PLAN ===== */
+.plan-section { margin-bottom: 20px; }
+.plan-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; background: var(--card);
+  border-radius: var(--radius-sm); margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.plan-check {
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid #ccc; flex-shrink: 0; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: #fff; transition: all 0.2s;
+}
+.plan-check.done { background: var(--green); border-color: var(--green); }
+.plan-check.done::after { content: '✓'; }
+.plan-text { flex: 1; font-size: 15px; }
+.plan-text.done { text-decoration: line-through; color: var(--text-light); }
+.plan-del {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: none; background: #f5f5f5; color: #999;
+  cursor: pointer; font-size: 16px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.plan-del:active { background: #ffebee; color: #e53935; }
+
+.add-plan-row {
+  display: flex; gap: 8px; margin-top: 8px;
+}
+.add-plan-row input {
+  flex: 1; padding: 10px 14px; border: 2px solid #e0e0e0;
+  border-radius: 10px; font-size: 14px; outline: none;
+  transition: border 0.2s;
+}
+.add-plan-row input:focus { border-color: var(--green); }
+.btn-add {
+  padding: 10px 16px; background: var(--green); color: #fff;
+  border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+  cursor: pointer; flex-shrink: 0;
+}
+.btn-add:active { background: var(--green-dark); }
+
+/* ===== ENGLISH TRAINING ===== */
+.eng-home-stats {
+  display: flex; gap: 12px; margin-bottom: 20px;
+}
+.eng-stat-card {
+  flex: 1; background: var(--card); border-radius: var(--radius-sm);
+  padding: 16px; text-align: center; box-shadow: var(--shadow);
+}
+.eng-stat-num { font-size: 28px; font-weight: 700; color: var(--blue); }
+.eng-stat-label { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+
+.btn-start {
+  width: 100%; padding: 14px; background: var(--blue); color: #fff;
+  border: none; border-radius: 12px; font-size: 17px; font-weight: 700;
+  cursor: pointer; box-shadow: 0 4px 12px rgba(33,150,243,0.3);
+}
+.btn-start:active { background: var(--blue-dark); }
+
+/* Flash card */
+.flash-card {
+  perspective: 1000px; width: 100%; max-width: 340px;
+  height: 220px; margin: 20px auto;
+}
+.flash-inner {
+  width: 100%; height: 100%; position: relative;
+  transition: transform 0.5s; transform-style: preserve-3d;
+}
+.flash-inner.flipped { transform: rotateY(180deg); }
+.flash-front, .flash-back {
+  position: absolute; width: 100%; height: 100%;
+  backface-visibility: hidden; border-radius: var(--radius);
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 24px;
+  box-shadow: var(--shadow);
+}
+.flash-front { background: var(--card); }
+.flash-back { background: var(--blue-light); transform: rotateY(180deg); }
+.flash-word { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+.flash-phonetic { font-size: 14px; color: var(--text-light); margin-bottom: 12px; }
+.flash-hint { font-size: 13px; color: var(--text-light); }
+.flash-meaning { font-size: 20px; font-weight: 600; color: var(--blue-dark); margin-bottom: 12px; }
+.flash-example { font-size: 14px; color: var(--text); line-height: 1.5; }
+
+.eng-progress-bar {
+  width: 100%; height: 6px; background: #e0e0e0;
+  border-radius: 3px; margin-bottom: 16px; overflow: hidden;
+}
+.eng-progress-fill {
+  height: 100%; background: var(--blue); border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.btn-row {
+  display: flex; gap: 10px; justify-content: center;
+  flex-wrap: wrap;
+}
+.btn-row button {
+  padding: 10px 20px; border-radius: 10px; border: none;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.btn-know { background: var(--green); color: #fff; }
+.btn-know:active { background: var(--green-dark); }
+.btn-dunno { background: #ff5252; color: #fff; }
+.btn-dunno:active { background: #d32f2f; }
+.btn-flip { background: var(--blue); color: #fff; }
+.btn-flip:active { background: var(--blue-dark); }
+.btn-next { background: var(--orange); color: #fff; }
+.btn-next:active { background: var(--orange-dark); }
+
+/* Quiz */
+.quiz-option {
+  width: 100%; padding: 12px 16px; margin-bottom: 8px;
+  background: var(--card); border: 2px solid #e0e0e0;
+  border-radius: 10px; font-size: 15px; cursor: pointer;
+  text-align: left; transition: all 0.2s;
+}
+.quiz-option:active { transform: scale(0.98); }
+.quiz-option.correct { border-color: var(--green); background: var(--green-light); }
+.quiz-option.wrong { border-color: #ff5252; background: #ffebee; }
+
+/* ===== BADUANJIN ===== */
+.baduanjin-video-wrap {
+  width: 100%; border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow);
+  margin-bottom: 16px; background: #000;
+}
+.baduanjin-video-wrap iframe {
+  width: 100%; height: 220px; border: none;
+}
+
+.baduanjin-steps { margin-bottom: 16px; }
+.baduanjin-step {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; background: var(--card);
+  border-radius: var(--radius-sm); margin-bottom: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.baduanjin-step-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--orange-light); color: var(--orange-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.baduanjin-step-num.active {
+  background: var(--orange); color: #fff;
+}
+.baduanjin-step-name { font-size: 14px; font-weight: 500; flex: 1; }
+.baduanjin-timer {
+  text-align: center; font-size: 32px; font-weight: 700;
+  color: var(--orange); margin: 12px 0;
+}
+.btn-baduanjin {
+  width: 100%; padding: 14px; background: var(--orange); color: #fff;
+  border: none; border-radius: 12px; font-size: 17px; font-weight: 700;
+  cursor: pointer; box-shadow: 0 4px 12px rgba(255,152,0,0.3);
+}
+.btn-baduanjin:active { background: var(--orange-dark); }
+
+/* ===== MOVIE ===== */
+.movie-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px;
+}
+.movie-poster {
+  width: 100%; height: 180px; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 48px; margin-bottom: 16px;
+}
+.movie-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.movie-meta { font-size: 13px; color: var(--text-light); margin-bottom: 8px; }
+.movie-desc { font-size: 14px; line-height: 1.6; color: #555; margin-bottom: 12px; }
+.movie-reason {
+  background: var(--purple-light); padding: 10px 14px;
+  border-radius: 8px; font-size: 13px; color: var(--purple-dark);
+}
+.btn-refresh-movie {
+  padding: 10px 20px; background: var(--purple); color: #fff;
+  border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+  cursor: pointer; margin-top: 12px;
+}
+.btn-refresh-movie:active { background: var(--purple-dark); }
+
+/* Toast */
+.toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  background: #333; color: #fff; padding: 10px 24px;
+  border-radius: 20px; font-size: 14px; z-index: 9999;
+  opacity: 0; transition: opacity 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+/* ===== WEATHER ===== */
+.weather-sky { --sky: #87CEEB; }
+.weather-home {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 4px; font-size: 13px;
+}
+.weather-home .temp { font-size: 22px; font-weight: 700; }
+.weather-home .desc { color: var(--text-light); }
+.weather-home .uv-badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 12px;
+  font-weight: 600; background: #FFF3E0; color: #E65100;
+}
+.weather-home .uv-badge.high { background: #FFEBEE; color: #C62828; }
+
+.weather-main {
+  text-align: center; padding: 16px 0;
+}
+.weather-main .big-temp {
+  font-size: 56px; font-weight: 300; line-height: 1;
+}
+.weather-main .big-desc {
+  font-size: 16px; color: var(--text-light); margin: 4px 0;
+}
+.weather-main .hi-lo {
+  font-size: 14px; color: var(--text);
+}
+.weather-detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin-bottom: 16px;
+}
+.weather-detail-item {
+  background: var(--card); border-radius: var(--radius-sm);
+  padding: 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.weather-detail-item .val { font-size: 22px; font-weight: 700; }
+.weather-detail-item .lbl { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+
+.uv-meter {
+  width: 100%; height: 10px; border-radius: 5px;
+  background: linear-gradient(to right, #4CAF50, #FFEB3B, #FF9800, #F44336, #9C27B0);
+  margin: 8px 0; position: relative;
+}
+.uv-meter-dot {
+  position: absolute; top: -5px; width: 20px; height: 20px;
+  border-radius: 50%; background: #333; border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3); transform: translateX(-50%);
+  transition: left 0.5s;
+}
+.uv-level {
+  font-size: 13px; font-weight: 600; text-align: center;
+}
+
+.weather-forecast {
+  display: flex; gap: 8px; overflow-x: auto;
+  padding-bottom: 4px;
+}
+.forecast-day {
+  flex: 0 0 70px; text-align: center;
+  background: var(--card); border-radius: var(--radius-sm);
+  padding: 10px 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.forecast-day .fday { font-size: 12px; color: var(--text-light); margin-bottom: 4px; }
+.forecast-day .ficon { font-size: 22px; margin-bottom: 4px; }
+.forecast-day .fhi { font-size: 14px; font-weight: 600; }
+.forecast-day .flo { font-size: 12px; color: var(--text-light); }
+
+.btn-locate {
+  width: 100%; padding: 12px; background: var(--card);
+  border: 2px dashed #ccc; border-radius: 12px;
+  font-size: 15px; color: var(--text-light); cursor: pointer;
+  margin-bottom: 16px;
+}
+.btn-locate:active { background: #f5f5f5; border-color: var(--sky); }
+
+/* Responsive */
+@media (min-width: 600px) {
+  .module-grid { grid-template-columns: repeat(2, 1fr); max-width: 400px; margin: 0 auto; }
+  .page-content { max-width: 500px; margin: 0 auto; }
+  .flash-card { height: 260px; }
+  .baduanjin-video-wrap iframe { height: 280px; }
+  .movie-poster { height: 240px; }
+  .weather-detail-grid { grid-template-columns: repeat(4, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ========== HOME PAGE ========== -->
+<div class="page active" id="page-home">
+  <div class="home-header">
+    <div class="app-icon"><span>姚</span></div>
+    <h1>姚小八工作台</h1>
+    <p class="subtitle">高效生活 · 每日精进</p>
+  </div>
+  <div class="module-grid">
+    <div class="module-card" onclick="goPage('plan')">
+      <div class="card-icon green">📋</div>
+      <div class="card-name">每日计划</div>
+      <div class="card-desc">必做清单 & 今日待办</div>
+      <div class="card-badge badge-green" id="homePlanBadge">0项</div>
+    </div>
+    <div class="module-card" onclick="goPage('english')">
+      <div class="card-icon blue">📖</div>
+      <div class="card-name">英语训练</div>
+      <div class="card-desc">单词记忆 · 智能复习</div>
+      <div class="card-badge badge-blue" id="homeEngBadge">0词</div>
+    </div>
+    <div class="module-card" onclick="goPage('baduanjin')">
+      <div class="card-icon orange">🧘</div>
+      <div class="card-name">八段锦</div>
+      <div class="card-desc">国体版 · 视频跟练</div>
+      <div class="card-badge badge-orange" id="homeBaduanjinBadge">12分钟</div>
+    </div>
+    <div class="module-card" onclick="goPage('movie')">
+      <div class="card-icon purple">🎬</div>
+      <div class="card-name">每周电影</div>
+      <div class="card-desc" id="homeMovieTitle">本周推荐</div>
+      <div class="card-badge badge-purple" id="homeMovieRating">⭐ 加载中</div>
+    </div>
+    <div class="module-card" onclick="goPage('weather')">
+      <div class="card-icon" style="background:#E3F2FD;">🌤️</div>
+      <div class="card-name">今日天气</div>
+      <div class="card-desc weather-home">
+        <span class="temp" id="homeWeatherTemp">--°</span>
+        <span class="desc" id="homeWeatherDesc">点击查看</span>
+        <span class="uv-badge" id="homeUVBadge" style="display:none">UV --</span>
+      </div>
+    </div>
+    <div class="module-card" onclick="goPage('memo')">
+      <div class="card-icon" style="background:#FFF8E1;">📝</div>
+      <div class="card-name">备忘录</div>
+      <div class="card-desc" id="homeMemoPreview" style="font-size:12px;color:var(--text-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">暂无备忘</div>
+      <div class="card-badge" style="background:#FFF8E1;color:#F9A825;top:12px;right:12px;font-size:11px;padding:3px 8px;border-radius:20px;font-weight:600;" id="homeMemoCount">0条</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== DAILY PLAN PAGE ========== -->
+<div class="page" id="page-plan">
+  <div class="topbar">
+    <button class="back-btn" onclick="goPage('home')">←</button>
+    <span class="title">每日计划</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="page-content">
+    <div class="plan-section">
+      <div class="section-title">每日必做</div>
+      <div id="mustDoList"></div>
+      <div class="add-plan-row">
+        <input type="text" id="mustDoInput" placeholder="添加每日必做...">
+        <button class="btn-add" onclick="addPlanItem('must')">添加</button>
+      </div>
+    </div>
+    <div class="plan-section">
+      <div class="section-title" style="--green: var(--orange)">今日待办</div>
+      <div id="todoList"></div>
+      <div class="add-plan-row">
+        <input type="text" id="todoInput" placeholder="添加今日待办...">
+        <button class="btn-add" style="background:var(--orange)" onclick="addPlanItem('todo')">添加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ENGLISH PAGE ========== -->
+<div class="page" id="page-english">
+  <div class="topbar">
+    <button class="back-btn" onclick="goPage('home')">←</button>
+    <span class="title">英语训练</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="page-content" id="engContent"></div>
+</div>
+
+<!-- ========== BADUANJIN PAGE ========== -->
+<div class="page" id="page-baduanjin">
+  <div class="topbar">
+    <button class="back-btn" onclick="goPage('home')">←</button>
+    <span class="title">八段锦</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="page-content">
+    <div class="baduanjin-video-wrap">
+      <iframe id="baduanjinVideo"
+        src="https://player.bilibili.com/player.html?bvid=BV1X4oKB7E17&page=1&high_quality=1&autoplay=0"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <div class="section-title">动作步骤</div>
+    <div class="baduanjin-steps" id="baduanjinSteps"></div>
+    <button class="btn-baduanjin" onclick="toggleBaduanjin()">▶ 开始跟练</button>
+  </div>
+</div>
+
+<!-- ========== MOVIE PAGE ========== -->
+<div class="page" id="page-movie">
+  <div class="topbar">
+    <button class="back-btn" onclick="goPage('home')">←</button>
+    <span class="title">每周电影</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="page-content" id="movieContent"></div>
+</div>
+
+<!-- ========== WEATHER PAGE ========== -->
+<div class="page" id="page-weather">
+  <div class="topbar">
+    <button class="back-btn" onclick="goPage('home')">←</button>
+    <span class="title">今日天气</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="page-content" id="weatherContent"></div>
+</div>
+
+<!-- ========== MEMO PAGE ========== -->
+<div class="page" id="page-memo">
+  <div class="topbar">
+    <button class="back-btn" onclick="goPage('home')">←</button>
+    <span class="title">备忘录</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="page-content" id="memoContent"></div>
+</div>
+
+<script>
+// ===== UTILITIES =====
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page-' + name);
+  if (target) target.classList.add('active');
+  if (name === 'home') refreshHome();
+  if (name === 'plan') renderPlan();
+  if (name === 'english') renderEngHome();
+  if (name === 'baduanjin') renderBaduanjin();
+  if (name === 'movie') renderMovie();
+  if (name === 'weather') renderWeather();
+  if (name === 'memo') renderMemo();
+  window.scrollTo(0, 0);
+}
+
+// ===== STORAGE HELPERS =====
+function loadPlan() {
+  try { return JSON.parse(localStorage.getItem('yao_plan') || '{"must":[],"todo":[],"mustDone":{},"todoDone":{}}'); }
+  catch(e) { return {must:[],todo:[],mustDone:{},todoDone:{}}; }
+}
+function savePlan(p) { localStorage.setItem('yao_plan', JSON.stringify(p)); }
+
+function loadEngMem() {
+  try { return JSON.parse(localStorage.getItem('yao_eng_mem') || '{}'); }
+  catch(e) { return {}; }
+}
+function saveEngMem(m) { localStorage.setItem('yao_eng_mem', JSON.stringify(m)); }
+
+function loadMovieState() {
+  try { return JSON.parse(localStorage.getItem('yao_movie') || '{"idx":0,"week":0}'); }
+  catch(e) { return {idx:0,week:0}; }
+}
+function saveMovieState(s) { localStorage.setItem('yao_movie', JSON.stringify(s)); }
+
+function loadBaduanjinState() {
+  try { return JSON.parse(localStorage.getItem('yao_baduanjin') || '{"active":false,"step":0}'); }
+  catch(e) { return {active:false,step:0}; }
+}
+function saveBaduanjinState(s) { localStorage.setItem('yao_baduanjin', JSON.stringify(s)); }
+
+// ===== ENGLISH VOCABULARY (120 words) =====
+const vocabBank = [
+  {w:"apple",p:"/ˈæp.əl/",m:"苹果",e:"I eat an apple every morning.",t:"fruit"},
+  {w:"banana",p:"/bəˈnæn.ə/",m:"香蕉",e:"Monkeys love bananas.",t:"fruit"},
+  {w:"orange",p:"/ˈɒr.ɪndʒ/",m:"橙子",e:"Would you like some orange juice?",t:"fruit"},
+  {w:"grape",p:"/ɡreɪp/",m:"葡萄",e:"These grapes are very sweet.",t:"fruit"},
+  {w:"watermelon",p:"/ˈwɔː.tə.mel.ən/",m:"西瓜",e:"Let's share a watermelon.",t:"fruit"},
+  {w:"strawberry",p:"/ˈstrɔː.bər.i/",m:"草莓",e:"I love strawberry ice cream.",t:"fruit"},
+  {w:"beautiful",p:"/ˈbjuː.tɪ.fəl/",m:"美丽的",e:"What a beautiful sunset!",t:"adj"},
+  {w:"important",p:"/ɪmˈpɔː.tənt/",m:"重要的",e:"Health is more important than money.",t:"adj"},
+  {w:"different",p:"/ˈdɪf.ər.ənt/",m:"不同的",e:"We have different opinions.",t:"adj"},
+  {w:"difficult",p:"/ˈdɪf.ɪ.kəlt/",m:"困难的",e:"This math problem is difficult.",t:"adj"},
+  {w:"interesting",p:"/ˈɪn.trə.stɪŋ/",m:"有趣的",e:"That's an interesting story.",t:"adj"},
+  {w:"delicious",p:"/dɪˈlɪʃ.əs/",m:"美味的",e:"This cake is delicious!",t:"adj"},
+  {w:"comfortable",p:"/ˈkʌmf.tə.bəl/",m:"舒适的",e:"This sofa is very comfortable.",t:"adj"},
+  {w:"popular",p:"/ˈpɒp.jə.lər/",m:"流行的",e:"This song is very popular.",t:"adj"},
+  {w:"friendly",p:"/ˈfrend.li/",m:"友好的",e:"Our neighbors are very friendly.",t:"adj"},
+  {w:"expensive",p:"/ɪkˈspen.sɪv/",m:"昂贵的",e:"This watch is too expensive.",t:"adj"},
+  {w:"necessary",p:"/ˈnes.ə.ser.i/",m:"必要的",e:"Water is necessary for life.",t:"adj"},
+  {w:"possible",p:"/ˈpɒs.ə.bəl/",m:"可能的",e:"Anything is possible if you try.",t:"adj"},
+  {w:"dangerous",p:"/ˈdeɪn.dʒər.əs/",m:"危险的",e:"It's dangerous to swim here.",t:"adj"},
+  {w:"wonderful",p:"/ˈwʌn.də.fəl/",m:"精彩的",e:"We had a wonderful time.",t:"adj"},
+  {w:"excellent",p:"/ˈek.səl.ənt/",m:"优秀的",e:"You did an excellent job!",t:"adj"},
+  {w:"breakfast",p:"/ˈbrek.fəst/",m:"早餐",e:"I usually have bread for breakfast.",t:"food"},
+  {w:"dinner",p:"/ˈdɪn.ər/",m:"晚餐",e:"We're having chicken for dinner.",t:"food"},
+  {w:"vegetable",p:"/ˈvedʒ.tə.bəl/",m:"蔬菜",e:"Eat more vegetables every day.",t:"food"},
+  {w:"chocolate",p:"/ˈtʃɒk.lət/",m:"巧克力",e:"Don't eat too much chocolate.",t:"food"},
+  {w:"restaurant",p:"/ˈres.tər.ɒnt/",m:"餐厅",e:"Let's meet at the restaurant.",t:"place"},
+  {w:"hospital",p:"/ˈhɒs.pɪ.təl/",m:"医院",e:"He was taken to the hospital.",t:"place"},
+  {w:"library",p:"/ˈlaɪ.brər.i/",m:"图书馆",e:"I study at the library every day.",t:"place"},
+  {w:"airport",p:"/ˈeə.pɔːt/",m:"机场",e:"Please pick me up at the airport.",t:"place"},
+  {w:"museum",p:"/mjuːˈziː.əm/",m:"博物馆",e:"The museum is free on Sundays.",t:"place"},
+  {w:"supermarket",p:"/ˈsuː.pə.mɑː.kɪt/",m:"超市",e:"I need to go to the supermarket.",t:"place"},
+  {w:"weather",p:"/ˈweð.ər/",m:"天气",e:"The weather is nice today.",t:"nature"},
+  {w:"mountain",p:"/ˈmaʊn.tɪn/",m:"山",e:"We climbed the mountain last weekend.",t:"nature"},
+  {w:"river",p:"/ˈrɪv.ər/",m:"河流",e:"The river flows through the city.",t:"nature"},
+  {w:"forest",p:"/ˈfɒr.ɪst/",m:"森林",e:"They got lost in the forest.",t:"nature"},
+  {w:"island",p:"/ˈaɪ.lənd/",m:"岛屿",e:"We spent the summer on a small island.",t:"nature"},
+  {w:"bridge",p:"/brɪdʒ/",m:"桥",e:"Cross the bridge and turn right.",t:"place"},
+  {w:"exercise",p:"/ˈek.sə.saɪz/",m:"锻炼",e:"Regular exercise keeps you healthy.",t:"health"},
+  {w:"medicine",p:"/ˈmed.ɪ.sən/",m:"药",e:"Take this medicine three times a day.",t:"health"},
+  {w:"temperature",p:"/ˈtem.pər.ə.tʃər/",m:"温度",e:"The temperature is below zero.",t:"nature"},
+  {w:"umbrella",p:"/ʌmˈbrel.ə/",m:"雨伞",e:"Don't forget your umbrella.",t:"object"},
+  {w:"camera",p:"/ˈkæm.ər.ə/",m:"相机",e:"I bought a new camera.",t:"object"},
+  {w:"computer",p:"/kəmˈpjuː.tər/",m:"电脑",e:"I work on my computer all day.",t:"object"},
+  {w:"telephone",p:"/ˈtel.ɪ.fəʊn/",m:"电话",e:"The telephone is ringing.",t:"object"},
+  {w:"newspaper",p:"/ˈnjuːz.peɪ.pər/",m:"报纸",e:"My father reads the newspaper every morning.",t:"object"},
+  {w:"magazine",p:"/ˌmæɡ.əˈziːn/",m:"杂志",e:"She bought a fashion magazine.",t:"object"},
+  {w:"dictionary",p:"/ˈdɪk.ʃən.ər.i/",m:"字典",e:"Look up the word in the dictionary.",t:"object"},
+  {w:"passport",p:"/ˈpɑːs.pɔːt/",m:"护照",e:"Show me your passport, please.",t:"object"},
+  {w:"luggage",p:"/ˈlʌɡ.ɪdʒ/",m:"行李",e:"My luggage was lost at the airport.",t:"object"},
+  {w:"bicycle",p:"/ˈbaɪ.sɪ.kəl/",m:"自行车",e:"I ride my bicycle to school.",t:"object"},
+  {w:"remember",p:"/rɪˈmem.bər/",m:"记得",e:"Remember to lock the door.",t:"verb"},
+  {w:"believe",p:"/bɪˈliːv/",m:"相信",e:"I believe you can do it.",t:"verb"},
+  {w:"decide",p:"/dɪˈsaɪd/",m:"决定",e:"I can't decide what to eat.",t:"verb"},
+  {w:"continue",p:"/kənˈtɪn.juː/",m:"继续",e:"Please continue with your story.",t:"verb"},
+  {w:"prepare",p:"/prɪˈpeər/",m:"准备",e:"I need to prepare for the exam.",t:"verb"},
+  {w:"explain",p:"/ɪkˈspleɪn/",m:"解释",e:"Can you explain this to me?",t:"verb"},
+  {w:"discover",p:"/dɪˈskʌv.ər/",m:"发现",e:"Scientists discover new things every day.",t:"verb"},
+  {w:"imagine",p:"/ɪˈmædʒ.ɪn/",m:"想象",e:"Imagine a world without war.",t:"verb"},
+  {w:"suggest",p:"/səˈdʒest/",m:"建议",e:"I suggest we leave early.",t:"verb"},
+  {w:"describe",p:"/dɪˈskraɪb/",m:"描述",e:"Can you describe the man you saw?",t:"verb"},
+  {w:"protect",p:"/prəˈtekt/",m:"保护",e:"We must protect the environment.",t:"verb"},
+  {w:"develop",p:"/dɪˈvel.əp/",m:"发展",e:"The city has developed quickly.",t:"verb"},
+  {w:"celebrate",p:"/ˈsel.ə.breɪt/",m:"庆祝",e:"How do you celebrate New Year?",t:"verb"},
+  {w:"communicate",p:"/kəˈmjuː.nɪ.keɪt/",m:"交流",e:"We communicate by email.",t:"verb"},
+  {w:"concentrate",p:"/ˈkɒn.sən.treɪt/",m:"集中",e:"I can't concentrate with this noise.",t:"verb"},
+  {w:"education",p:"/ˌedʒ.uˈkeɪ.ʃən/",m:"教育",e:"Education is the key to success.",t:"noun"},
+  {w:"environment",p:"/ɪnˈvaɪ.rən.mənt/",m:"环境",e:"We should protect the environment.",t:"noun"},
+  {w:"experience",p:"/ɪkˈspɪə.ri.əns/",m:"经验",e:"Do you have any work experience?",t:"noun"},
+  {w:"information",p:"/ˌɪn.fəˈmeɪ.ʃən/",m:"信息",e:"You can find information online.",t:"noun"},
+  {w:"knowledge",p:"/ˈnɒl.ɪdʒ/",m:"知识",e:"Knowledge is power.",t:"noun"},
+  {w:"opportunity",p:"/ˌɒp.əˈtjuː.nə.ti/",m:"机会",e:"This is a great opportunity.",t:"noun"},
+  {w:"technology",p:"/tekˈnɒl.ə.dʒi/",m:"技术",e:"Technology is changing our lives.",t:"noun"},
+  {w:"tradition",p:"/trəˈdɪʃ.ən/",m:"传统",e:"It's a family tradition.",t:"noun"},
+  {w:"conversation",p:"/ˌkɒn.vəˈseɪ.ʃən/",m:"对话",e:"We had a nice conversation.",t:"noun"},
+  {w:"competition",p:"/ˌkɒm.pəˈtɪʃ.ən/",m:"比赛",e:"She won the competition.",t:"noun"},
+  {w:"pronunciation",p:"/prəˌnʌn.siˈeɪ.ʃən/",m:"发音",e:"Your pronunciation is very good.",t:"noun"},
+  {w:"relationship",p:"/rɪˈleɪ.ʃən.ʃɪp/",m:"关系",e:"They have a good relationship.",t:"noun"},
+  {w:"yesterday",p:"/ˈjes.tə.deɪ/",m:"昨天",e:"I saw him yesterday.",t:"time"},
+  {w:"tomorrow",p:"/təˈmɒr.əʊ/",m:"明天",e:"See you tomorrow!",t:"time"},
+  {w:"usually",p:"/ˈjuː.ʒu.ə.li/",m:"通常",e:"I usually get up at seven.",t:"adv"},
+  {w:"suddenly",p:"/ˈsʌd.ən.li/",m:"突然",e:"Suddenly, it started to rain.",t:"adv"},
+  {w:"especially",p:"/ɪˈspeʃ.əl.i/",m:"尤其",e:"I love fruits, especially apples.",t:"adv"},
+  {w:"probably",p:"/ˈprɒb.ə.bli/",m:"可能",e:"He's probably at home now.",t:"adv"},
+  {w:"definitely",p:"/ˈdef.ɪ.nət.li/",m:"肯定",e:"I will definitely come.",t:"adv"},
+  {w:"immediately",p:"/ɪˈmiː.di.ət.li/",m:"立刻",e:"Come here immediately!",t:"adv"},
+  {w:"carefully",p:"/ˈkeə.fəl.i/",m:"小心地",e:"Drive carefully on icy roads.",t:"adv"},
+  {w:"unfortunately",p:"/ʌnˈfɔː.tʃən.ət.li/",m:"不幸地",e:"Unfortunately, he missed the train.",t:"adv"},
+  {w:"piano",p:"/piˈæn.əʊ/",m:"钢琴",e:"She plays the piano beautifully.",t:"music"},
+  {w:"concert",p:"/ˈkɒn.sət/",m:"音乐会",e:"We went to a rock concert.",t:"music"},
+  {w:"guitar",p:"/ɡɪˈtɑːr/",m:"吉他",e:"He taught himself to play guitar.",t:"music"},
+  {w:"cartoon",p:"/kɑːˈtuːn/",m:"卡通",e:"Children love watching cartoons.",t:"entertainment"},
+  {w:"theater",p:"/ˈθɪə.tər/",m:"剧院",e:"Let's go to the theater tonight.",t:"place"},
+  {w:"passenger",p:"/ˈpæs.ən.dʒər/",m:"乘客",e:"All passengers must fasten seat belts.",t:"people"},
+  {w:"neighbor",p:"/ˈneɪ.bər/",m:"邻居",e:"Our neighbors are very kind.",t:"people"},
+  {w:"stranger",p:"/ˈstreɪn.dʒər/",m:"陌生人",e:"Don't talk to strangers.",t:"people"},
+  {w:"volunteer",p:"/ˌvɒl.ənˈtɪər/",m:"志愿者",e:"She works as a volunteer on weekends.",t:"people"},
+  {w:"engineer",p:"/ˌen.dʒɪˈnɪər/",m:"工程师",e:"My brother is a software engineer.",t:"job"},
+  {w:"scientist",p:"/ˈsaɪ.ən.tɪst/",m:"科学家",e:"She wants to become a scientist.",t:"job"},
+  {w:"president",p:"/ˈprez.ɪ.dənt/",m:"总统",e:"The president gave a speech.",t:"job"},
+  {w:"manager",p:"/ˈmæn.ɪ.dʒər/",m:"经理",e:"Please speak to the manager.",t:"job"},
+  {w:"direction",p:"/daɪˈrek.ʃən/",m:"方向",e:"Which direction should we go?",t:"noun"},
+  {w:"attention",p:"/əˈten.ʃən/",m:"注意",e:"Pay attention to the teacher.",t:"noun"},
+  {w:"situation",p:"/ˌsɪtʃ.uˈeɪ.ʃən/",m:"情况",e:"The situation is under control.",t:"noun"},
+  {w:"solution",p:"/səˈluː.ʃən/",m:"解决方案",e:"We need to find a solution.",t:"noun"},
+  {w:"adventure",p:"/ədˈven.tʃər/",m:"冒险",e:"Life is a great adventure.",t:"noun"},
+  {w:"achievement",p:"/əˈtʃiːv.mənt/",m:"成就",e:"Graduation is a big achievement.",t:"noun"},
+  {w:"appointment",p:"/əˈpɔɪnt.mənt/",m:"预约",e:"I have a doctor's appointment.",t:"noun"},
+  {w:"introduction",p:"/ˌɪn.trəˈdʌk.ʃən/",m:"介绍",e:"Let me give you a brief introduction.",t:"noun"},
+  {w:"apartment",p:"/əˈpɑːt.mənt/",m:"公寓",e:"I live in a small apartment.",t:"place"},
+  {w:"instrument",p:"/ˈɪn.strə.mənt/",m:"乐器",e:"Do you play any musical instrument?",t:"music"},
+  {w:"satellite",p:"/ˈsæt.ə.laɪt/",m:"卫星",e:"The satellite orbits the Earth.",t:"science"},
+  {w:"electricity",p:"/ˌel.ɪkˈtrɪs.ə.ti/",m:"电",e:"The electricity went out last night.",t:"science"},
+  {w:"experiment",p:"/ɪkˈsper.ɪ.mənt/",m:"实验",e:"Let's do a science experiment.",t:"science"},
+  {w:"congratulation",p:"/kənˌɡrætʃ.əˈleɪ.ʃən/",m:"祝贺",e:"Congratulations on your new job!",t:"noun"},
+  {w:"embarrassed",p:"/ɪmˈbær.əst/",m:"尴尬的",e:"I felt embarrassed when I fell.",t:"adj"},
+  {w:"responsible",p:"/rɪˈspɒn.sə.bəl/",m:"负责的",e:"You need to be more responsible.",t:"adj"},
+];
+
+// ===== MOVIE DATA =====
+const movieBank = [
+  {title:"肖申克的救赎",year:"1994",rating:"9.7",genre:"剧情",desc:"银行家安迪被冤枉入狱，用20年时间凿出一条通往自由的隧道。关于希望与坚持的最伟大电影。",reason:"当你感到被困住时，这部电影会给你力量。"},
+  {title:"阿甘正传",year:"1994",rating:"9.5",genre:"剧情/励志",desc:"智商只有75的阿甘，凭借善良和执着跑出了一段传奇人生。",reason:"简单的人生态度往往能创造奇迹。"},
+  {title:"千与千寻",year:"2001",rating:"9.4",genre:"动画/奇幻",desc:"少女千寻误入神灵世界，为了救回父母而努力工作、成长的故事。",reason:"宫崎骏的巅峰之作，每次看都有新感悟。"},
+  {title:"楚门的世界",year:"1998",rating:"9.3",genre:"剧情/科幻",desc:"楚门从出生起就活在一场全球直播的真人秀中，直到他发现了真相。",reason:"启发你思考什么是真正的生活。"},
+  {title:"当幸福来敲门",year:"2006",rating:"9.2",genre:"传记/励志",desc:"单亲爸爸带着儿子流浪街头，却从未放弃成为股票经纪人的梦想。",reason:"当你觉得生活艰难时，看看威尔·史密斯的坚持。"},
+  {title:"星际穿越",year:"2014",rating:"9.4",genre:"科幻/冒险",desc:"为了拯救人类，一群宇航员穿越虫洞寻找新家园。爱能穿越时空。",reason:"硬核科幻外壳下，是最动人的父女情。"},
+  {title:"放牛班的春天",year:"2004",rating:"9.3",genre:"音乐/剧情",desc:"一位音乐老师用合唱改变了问题少年们的人生轨迹。",reason:"音乐的力量和教育的真谛，温暖人心。"},
+  {title:"疯狂动物城",year:"2016",rating:"9.2",genre:"动画/冒险",desc:"兔子朱迪来到动物城追逐警察梦想，和狐狸尼克联手破案。",reason:"笑中带泪的成人童话，关于偏见与梦想。"},
+  {title:"海上钢琴师",year:"1998",rating:"9.3",genre:"音乐/剧情",desc:"一个从未下过船的天才钢琴师1900的传奇一生。",reason:"关于选择、恐惧和纯粹的理想主义。"},
+  {title:"三傻大闹宝莱坞",year:"2009",rating:"9.2",genre:"喜剧/励志",desc:"三个工科学生在印度顶级学府挑战填鸭式教育，追寻真正的热爱。",reason:"笑到肚子痛的同时，重新思考教育的意义。"},
+  {title:"美丽人生",year:"1997",rating:"9.5",genre:"战争/喜剧",desc:"犹太父亲在集中营中用想象力为儿子编织了一个美丽的游戏世界。",reason:"在最黑暗的时刻，父爱和幽默是最亮的光。"},
+  {title:"寻梦环游记",year:"2017",rating:"9.1",genre:"动画/音乐",desc:"小男孩米格在亡灵节误入亡灵世界，揭开家族秘密的故事。",reason:"死亡不是终点，遗忘才是。准备好纸巾。"},
+  {title:"绿皮书",year:"2018",rating:"8.9",genre:"剧情/喜剧",desc:"黑人钢琴家和白人司机在1960年代美国南方的公路之旅。",reason:"跨越种族和阶级的友谊，温暖而有力。"},
+  {title:"机器人总动员",year:"2008",rating:"9.3",genre:"动画/科幻",desc:"地球上的最后一个机器人瓦力，遇见了来寻找生命的机器人伊娃。",reason:"几乎没有台词，却讲出了最动人的爱情故事。"},
+];
+
+// ===== BADUANJIN DATA =====
+const baduanjinSteps = [
+  {name:"双手托天理三焦", desc:"两手缓缓上托，调理全身气血"},
+  {name:"左右开弓似射雕", desc:"模拟射箭动作，舒展胸肺"},
+  {name:"调理脾胃须单举", desc:"一手上举一手下按，按摩脾胃"},
+  {name:"五劳七伤往后瞧", desc:"转头后望，活动颈椎"},
+  {name:"摇头摆尾去心火", desc:"马步摇头摆尾，降心火"},
+  {name:"两手攀足固肾腰", desc:"俯身攀足，强腰固肾"},
+  {name:"攒拳怒目增气力", desc:"马步冲拳瞪眼，增强气力"},
+  {name:"背后七颠百病消", desc:"提踵颠足，通畅全身"},
+];
+
+// ========== DAILY PLAN ==========
+function renderPlan() {
+  const p = loadPlan();
+  const today = new Date().toDateString();
+  if (p.date !== today) {
+    p.mustDone = {}; p.todoDone = {}; p.date = today;
+    savePlan(p);
+  }
+
+  // Must-do list
+  const mList = document.getElementById('mustDoList');
+  mList.innerHTML = p.must.map((item, i) => {
+    const done = p.mustDone[i] || false;
+    return `<div class="plan-item">
+      <div class="plan-check ${done?'done':''}" onclick="togglePlan('must',${i})"></div>
+      <span class="plan-text ${done?'done':''}">${escHtml(item)}</span>
+      <button class="plan-del" onclick="delPlanItem('must',${i})">×</button>
+    </div>`;
+  }).join('');
+
+  // Todo list
+  const tList = document.getElementById('todoList');
+  tList.innerHTML = p.todo.map((item, i) => {
+    const done = p.todoDone[i] || false;
+    return `<div class="plan-item">
+      <div class="plan-check ${done?'done':''}" onclick="togglePlan('todo',${i})"></div>
+      <span class="plan-text ${done?'done':''}">${escHtml(item)}</span>
+      <button class="plan-del" onclick="delPlanItem('todo',${i})">×</button>
+    </div>`;
+  }).join('');
+
+  document.getElementById('mustDoInput').value = '';
+  document.getElementById('todoInput').value = '';
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s; return d.innerHTML;
+}
+
+function addPlanItem(type) {
+  const input = document.getElementById(type === 'must' ? 'mustDoInput' : 'todoInput');
+  const text = input.value.trim();
+  if (!text) { toast('请输入内容'); return; }
+  const p = loadPlan();
+  const key = type === 'must' ? 'must' : 'todo';
+  p[key].push(text);
+  savePlan(p);
+  renderPlan();
+}
+
+function togglePlan(type, idx) {
+  const p = loadPlan();
+  const key = type === 'must' ? 'mustDone' : 'todoDone';
+  p[key][idx] = !p[key][idx];
+  savePlan(p);
+  renderPlan();
+}
+
+function delPlanItem(type, idx) {
+  const p = loadPlan();
+  const key = type === 'must' ? 'must' : 'todo';
+  const doneKey = type === 'must' ? 'mustDone' : 'todoDone';
+  p[key].splice(idx, 1);
+  delete p[doneKey][idx];
+  // reindex
+  const newDone = {};
+  Object.keys(p[doneKey]).forEach(k => {
+    const ki = parseInt(k);
+    if (ki > idx) newDone[ki-1] = p[doneKey][k];
+    else if (ki < idx) newDone[ki] = p[doneKey][k];
+  });
+  p[doneKey] = newDone;
+  savePlan(p);
+  renderPlan();
+}
+
+// ========== ENGLISH TRAINING ==========
+let engSession = null; // {words:[], idx:0, phase:'learn'|'quiz', known:[], unknown:[], quizOptions:[]}
+
+function getReviewWords(mem, count) {
+  const entries = Object.entries(mem);
+  if (entries.length === 0) return [];
+  // Sort by last reviewed (oldest first) and accuracy (lowest first)
+  entries.sort((a, b) => {
+    const sa = a[1].lastReview || 0;
+    const sb = b[1].lastReview || 0;
+    if (sa !== sb) return sa - sb;
+    return (a[1].accuracy || 0) - (b[1].accuracy || 0);
+  });
+  return entries.slice(0, Math.min(count, entries.length)).map(e => parseInt(e[0]));
+}
+
+function pickSessionWords() {
+  const mem = loadEngMem();
+  const totalCount = 12; // 12 words per session
+  const reviewCount = Math.floor(totalCount * 0.5); // 50% review
+
+  // Review words
+  const reviewIndices = getReviewWords(mem, reviewCount);
+
+  // New words: pick words not yet learned, or least reviewed
+  const learnedSet = new Set(Object.keys(mem).map(Number));
+  const reviewSet = new Set(reviewIndices);
+  const newCandidates = [];
+  vocabBank.forEach((w, i) => {
+    if (!learnedSet.has(i) || (!reviewSet.has(i) && (mem[i]?.accuracy || 0) < 0.6)) {
+      newCandidates.push(i);
+    }
+  });
+
+  // Shuffle new candidates
+  for (let i = newCandidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newCandidates[i], newCandidates[j]] = [newCandidates[j], newCandidates[i]];
+  }
+
+  const newCount = totalCount - reviewIndices.length;
+  const newWords = newCandidates.slice(0, newCount);
+
+  // Combine and shuffle
+  const all = [...reviewIndices, ...newWords];
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [all[i], all[j]] = [all[j], all[i]];
+  }
+
+  return all.map(i => vocabBank[i]);
+}
+
+function renderEngHome() {
+  const mem = loadEngMem();
+  const totalLearned = Object.keys(mem).length;
+  const totalReviewed = Object.values(mem).reduce((sum, v) => sum + (v.reviewCount || 0), 0);
+
+  document.getElementById('engContent').innerHTML = `
+    <div class="eng-home-stats">
+      <div class="eng-stat-card">
+        <div class="eng-stat-num">${totalLearned}</div>
+        <div class="eng-stat-label">已学单词</div>
+      </div>
+      <div class="eng-stat-card">
+        <div class="eng-stat-num">${totalReviewed}</div>
+        <div class="eng-stat-label">累计复习</div>
+      </div>
+      <div class="eng-stat-card">
+        <div class="eng-stat-num">${vocabBank.length}</div>
+        <div class="eng-stat-label">词库总量</div>
+      </div>
+    </div>
+    <button class="btn-start" onclick="startEnglish()">🎯 开始今日训练 (12个单词)</button>
+    <p style="text-align:center;color:var(--text-light);font-size:13px;margin-top:12px;">
+      智能复习系统：50%新词 + 50%薄弱词复习<br>预计用时：约15分钟
+    </p>
+  `;
+}
+
+function startEnglish() {
+  const words = pickSessionWords();
+  if (words.length === 0) { toast('词库已全部学完！'); return; }
+  engSession = { words, idx: 0, phase: 'learn', known: [], unknown: [] };
+  renderEngLearn();
+}
+
+function renderEngLearn() {
+  const s = engSession;
+  if (s.idx >= s.words.length) {
+    // Move to quiz phase
+    if (s.unknown.length === 0) {
+      // All known, show results
+      showEngResults();
+      return;
+    }
+    s.phase = 'quiz';
+    s.idx = 0;
+    // Quiz on unknown words
+    s.quizWords = [...s.unknown];
+    // Shuffle
+    for (let i = s.quizWords.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [s.quizWords[i], s.quizWords[j]] = [s.quizWords[j], s.quizWords[i]];
+    }
+    renderEngQuiz();
+    return;
+  }
+
+  const word = s.words[s.idx];
+  const progress = Math.round((s.idx / s.words.length) * 100);
+
+  document.getElementById('engContent').innerHTML = `
+    <div class="eng-progress-bar">
+      <div class="eng-progress-fill" style="width:${progress}%"></div>
+    </div>
+    <p style="text-align:center;color:var(--text-light);font-size:13px;margin-bottom:8px;">
+      学习阶段 ${s.idx+1}/${s.words.length}
+    </p>
+    <div class="flash-card" onclick="flipCard()">
+      <div class="flash-inner" id="flashInner">
+        <div class="flash-front">
+          <div class="flash-word">${escHtml(word.w)}</div>
+          <div class="flash-phonetic">${escHtml(word.p)}</div>
+          <div class="flash-hint">👆 点击翻转查看释义</div>
+        </div>
+        <div class="flash-back">
+          <div class="flash-meaning">${escHtml(word.m)}</div>
+          <div class="flash-example">📝 ${escHtml(word.e)}</div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-dunno" onclick="markWord(false)">❌ 不认识</button>
+      <button class="btn-know" onclick="markWord(true)">✅ 认识了</button>
+    </div>
+  `;
+}
+
+function flipCard() {
+  const inner = document.getElementById('flashInner');
+  if (inner) inner.classList.toggle('flipped');
+}
+
+function markWord(known) {
+  const s = engSession;
+  const wordIdx = vocabBank.indexOf(s.words[s.idx]);
+  const mem = loadEngMem();
+
+  if (!mem[wordIdx]) {
+    mem[wordIdx] = { accuracy: 0, reviewCount: 0, lastReview: Date.now() };
+  }
+
+  if (known) {
+    s.known.push(s.idx);
+    mem[wordIdx].accuracy = Math.min(1, (mem[wordIdx].accuracy || 0) + 0.2);
+  } else {
+    s.unknown.push(s.idx);
+    mem[wordIdx].accuracy = Math.max(0, (mem[wordIdx].accuracy || 0.5) - 0.1);
+  }
+  mem[wordIdx].reviewCount = (mem[wordIdx].reviewCount || 0) + 1;
+  mem[wordIdx].lastReview = Date.now();
+  saveEngMem(mem);
+
+  s.idx++;
+  renderEngLearn();
+}
+
+function renderEngQuiz() {
+  const s = engSession;
+  if (s.idx >= s.quizWords.length) {
+    showEngResults();
+    return;
+  }
+
+  const wordIdx = s.quizWords[s.idx];
+  const word = vocabBank[wordIdx];
+
+  // Generate 4 options (correct + 3 random)
+  const options = [wordIdx];
+  while (options.length < 4) {
+    const r = Math.floor(Math.random() * vocabBank.length);
+    if (!options.includes(r)) options.push(r);
+  }
+  // Shuffle options
+  for (let i = options.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [options[i], options[j]] = [options[j], options[i]];
+  }
+  s.quizOptions = options;
+
+  const progress = Math.round((s.idx / s.quizWords.length) * 100);
+
+  document.getElementById('engContent').innerHTML = `
+    <div class="eng-progress-bar">
+      <div class="eng-progress-fill" style="width:${progress}%"></div>
+    </div>
+    <p style="text-align:center;color:var(--text-light);font-size:13px;margin-bottom:16px;">
+      测验阶段 ${s.idx+1}/${s.quizWords.length}
+    </p>
+    <div style="text-align:center;font-size:28px;font-weight:700;margin-bottom:8px;">
+      ${escHtml(word.w)}
+    </div>
+    <div style="text-align:center;color:var(--text-light);font-size:14px;margin-bottom:20px;">
+      ${escHtml(word.p)}
+    </div>
+    <p style="text-align:center;color:var(--text-light);font-size:13px;margin-bottom:12px;">选择正确的中文释义：</p>
+    <div id="quizOptions">
+      ${options.map((oi, i) => `
+        <button class="quiz-option" onclick="answerQuiz(${oi}, ${wordIdx}, this)" data-correct="${oi === wordIdx}">
+          ${String.fromCharCode(65+i)}. ${escHtml(vocabBank[oi].m)}
+        </button>
+      `).join('')}
+    </div>
+  `;
+}
+
+function answerQuiz(selected, correct, btn) {
+  const s = engSession;
+  const mem = loadEngMem();
+
+  // Disable all buttons
+  document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+
+  if (selected === correct) {
+    btn.classList.add('correct');
+    if (mem[correct]) {
+      mem[correct].accuracy = Math.min(1, (mem[correct].accuracy || 0) + 0.15);
+    }
+  } else {
+    btn.classList.add('wrong');
+    // Highlight correct answer
+    document.querySelectorAll('.quiz-option').forEach(b => {
+      if (b.getAttribute('data-correct') === 'true') b.classList.add('correct');
+    });
+    if (mem[correct]) {
+      mem[correct].accuracy = Math.max(0, (mem[correct].accuracy || 0.5) - 0.1);
+    }
+  }
+
+  if (mem[correct]) {
+    mem[correct].reviewCount = (mem[correct].reviewCount || 0) + 1;
+    mem[correct].lastReview = Date.now();
+  }
+  saveEngMem(mem);
+
+  // Auto-advance after 1.5s
+  setTimeout(() => {
+    s.idx++;
+    renderEngQuiz();
+  }, 1500);
+}
+
+function showEngResults() {
+  const s = engSession;
+  const total = s.words.length;
+  const known = s.known.length;
+  const quizTotal = s.quizWords ? s.quizWords.length : 0;
+
+  document.getElementById('engContent').innerHTML = `
+    <div style="text-align:center;padding:20px 0;">
+      <div style="font-size:48px;margin-bottom:12px;">🎉</div>
+      <h2 style="margin-bottom:8px;">今日训练完成！</h2>
+      <div class="eng-home-stats">
+        <div class="eng-stat-card">
+          <div class="eng-stat-num">${total}</div>
+          <div class="eng-stat-label">学习单词</div>
+        </div>
+        <div class="eng-stat-card">
+          <div class="eng-stat-num">${known}</div>
+          <div class="eng-stat-label">初次认识</div>
+        </div>
+        <div class="eng-stat-card">
+          <div class="eng-stat-num">${quizTotal}</div>
+          <div class="eng-stat-label">测验巩固</div>
+        </div>
+      </div>
+      <button class="btn-start" onclick="renderEngHome()" style="margin-top:16px;">返回英语首页</button>
+    </div>
+  `;
+  engSession = null;
+}
+
+// ========== BADUANJIN ==========
+function renderBaduanjin() {
+  const state = loadBaduanjinState();
+  const stepsHtml = baduanjinSteps.map((s, i) => `
+    <div class="baduanjin-step">
+      <div class="baduanjin-step-num ${state.active && state.step===i ? 'active' : ''}">${i+1}</div>
+      <div>
+        <div class="baduanjin-step-name">${s.name}</div>
+        <div style="font-size:12px;color:var(--text-light)">${s.desc}</div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('baduanjinSteps').innerHTML = stepsHtml;
+}
+
+function toggleBaduanjin() {
+  const state = loadBaduanjinState();
+  state.active = !state.active;
+  if (!state.active) state.step = 0;
+  saveBaduanjinState(state);
+  renderBaduanjin();
+
+  const btn = document.querySelector('.btn-baduanjin');
+  if (btn) {
+    btn.textContent = state.active ? '⏸ 暂停' : '▶ 开始跟练';
+  }
+
+  if (state.active) {
+    toast('开始跟练！跟着视频一起做吧 💪');
+    // Try to play the video
+    const iframe = document.getElementById('baduanjinVideo');
+    if (iframe) {
+      // Reload iframe to trigger autoplay
+      const src = iframe.src;
+      iframe.src = '';
+      setTimeout(() => { iframe.src = src; }, 100);
+    }
+  }
+}
+
+// ========== MOVIE ==========
+function getWeekNumber() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const diff = now - start;
+  return Math.floor(diff / (7 * 24 * 60 * 60 * 1000));
+}
+
+function getCurrentMovie() {
+  const state = loadMovieState();
+  const currentWeek = getWeekNumber();
+
+  if (state.week !== currentWeek) {
+    // New week: pick next movie
+    state.week = currentWeek;
+    state.idx = (state.idx + 1) % movieBank.length;
+    saveMovieState(state);
+  }
+  return movieBank[state.idx];
+}
+
+function renderMovie() {
+  const movie = getCurrentMovie();
+  const state = loadMovieState();
+  const weekLabel = `第${state.week}周`;
+
+  document.getElementById('movieContent').innerHTML = `
+    <div class="movie-card">
+      <div class="movie-poster">🎬</div>
+      <div class="movie-title">${escHtml(movie.title)}</div>
+      <div class="movie-meta">
+        ${movie.year} · ${movie.genre} · ⭐ ${movie.rating}
+      </div>
+      <div class="movie-desc">${escHtml(movie.desc)}</div>
+      <div class="movie-reason">💡 推荐理由：${escHtml(movie.reason)}</div>
+      <button class="btn-refresh-movie" onclick="nextMovie()">🔄 换一部推荐</button>
+      <p style="text-align:center;color:var(--text-light);font-size:12px;margin-top:8px;">
+        ${weekLabel} · 每周一自动更新
+      </p>
+    </div>
+  `;
+}
+
+function nextMovie() {
+  const state = loadMovieState();
+  state.idx = (state.idx + 1) % movieBank.length;
+  saveMovieState(state);
+  renderMovie();
+  toast('已更换推荐影片 🎬');
+}
+
+// ========== HOME REFRESH ==========
+function refreshHome() {
+  // Plan badge
+  const p = loadPlan();
+  const today = new Date().toDateString();
+  if (p.date !== today) {
+    p.mustDone = {}; p.todoDone = {}; p.date = today;
+    savePlan(p);
+  }
+  const mustDone = Object.values(p.mustDone).filter(Boolean).length;
+  const todoDone = Object.values(p.todoDone).filter(Boolean).length;
+  const totalDone = mustDone + todoDone;
+  const totalItems = p.must.length + p.todo.length;
+  document.getElementById('homePlanBadge').textContent = totalItems > 0 ? `${totalDone}/${totalItems}项` : '0项';
+
+  // English badge
+  const mem = loadEngMem();
+  document.getElementById('homeEngBadge').textContent = `${Object.keys(mem).length}词`;
+
+  // Movie card
+  const movie = getCurrentMovie();
+  document.getElementById('homeMovieTitle').textContent = movie.title;
+  document.getElementById('homeMovieRating').textContent = `⭐ ${movie.rating}`;
+
+  // Weather card
+  updateHomeWeather();
+  // Memo card
+  updateHomeMemo();
+}
+
+// ========== MEMO ==========
+function loadMemos() {
+  try { return JSON.parse(localStorage.getItem('yao_memos') || '[]'); }
+  catch(e) { return []; }
+}
+function saveMemos(m) { localStorage.setItem('yao_memos', JSON.stringify(m)); }
+
+function updateHomeMemo() {
+  const memos = loadMemos();
+  const preview = document.getElementById('homeMemoPreview');
+  const count = document.getElementById('homeMemoCount');
+  const undone = memos.filter(m => !m.done).length;
+  if (memos.length === 0) {
+    preview.textContent = '暂无备忘';
+    count.textContent = '0条';
+  } else if (undone === 0) {
+    preview.textContent = '🎉 全部完成！';
+    count.textContent = '✓完成';
+  } else {
+    preview.textContent = memos.filter(m => !m.done)[0].text.substring(0, 20);
+    count.textContent = `${undone}项待办`;
+  }
+}
+
+function renderMemo() {
+  const memos = loadMemos();
+  const el = document.getElementById('memoContent');
+  const undone = memos.filter(m => !m.done);
+  const done = memos.filter(m => m.done);
+
+  const itemHtml = (m, i) => {
+    const realIdx = memos.indexOf(m);
+    const isDone = m.done;
+    return `<div class="memo-item" style="background:var(--card);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05);display:flex;align-items:center;gap:10px;${isDone?'opacity:0.6':''}">
+      <div class="plan-check ${isDone?'done':''}" onclick="toggleMemo(${realIdx})" style="flex-shrink:0;"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;line-height:1.5;word-break:break-word;${isDone?'text-decoration:line-through;color:var(--text-light)':''}">${escHtml(m.text)}</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:4px;">
+          ${isDone ? `✅ ${m.doneTime || m.time}` : `📌 ${m.time}`}
+        </div>
+      </div>
+      <button onclick="deleteMemo(${realIdx})" style="width:28px;height:28px;border-radius:50%;border:none;background:#f5f5f5;color:#999;cursor:pointer;font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">×</button>
+    </div>`;
+  };
+
+  const undoneHtml = undone.length === 0
+    ? `<div style="text-align:center;padding:16px 0;color:var(--text-light);font-size:13px;">暂无待办事项</div>`
+    : undone.map(itemHtml).join('');
+
+  const doneHtml = done.length === 0 ? '' : `
+    <div class="section-title" style="margin-top:16px;">已完成 (${done.length})</div>
+    ${done.map(itemHtml).join('')}
+  `;
+
+  el.innerHTML = `
+    <div class="add-plan-row" style="margin-bottom:16px;">
+      <input type="text" id="memoInput" placeholder="添加待办事项...">
+      <button class="btn-add" style="background:#F9A825;" onclick="addMemo()">添加</button>
+    </div>
+    <div class="section-title">待办 (${undone.length})</div>
+    ${undoneHtml}
+    ${doneHtml}
+    ${memos.length > 0 ? `<button onclick="clearAllMemos()" style="width:100%;padding:10px;background:none;border:1px solid #ffcdd2;border-radius:10px;color:#e53935;font-size:13px;cursor:pointer;margin-top:16px;">🗑 清空全部</button>` : ''}
+  `;
+
+  document.getElementById('memoInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addMemo();
+  });
+}
+
+function addMemo() {
+  const input = document.getElementById('memoInput');
+  const text = input.value.trim();
+  if (!text) { toast('请输入内容'); return; }
+  const memos = loadMemos();
+  const now = new Date();
+  const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+  memos.unshift({text, time: timeStr, done: false});
+  saveMemos(memos);
+  updateHomeMemo();
+  renderMemo();
+}
+
+function toggleMemo(idx) {
+  const memos = loadMemos();
+  const now = new Date();
+  const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+  memos[idx].done = !memos[idx].done;
+  if (memos[idx].done) {
+    memos[idx].doneTime = timeStr;
+  } else {
+    delete memos[idx].doneTime;
+  }
+  saveMemos(memos);
+  updateHomeMemo();
+  renderMemo();
+  if (memos[idx].done) toast('✅ 已完成！');
+}
+
+function deleteMemo(idx) {
+  const memos = loadMemos();
+  memos.splice(idx, 1);
+  saveMemos(memos);
+  updateHomeMemo();
+  renderMemo();
+  toast('已删除');
+}
+
+function clearAllMemos() {
+  if (confirm('确定要清空所有备忘录吗？此操作不可撤销。')) {
+    saveMemos([]);
+    updateHomeMemo();
+    renderMemo();
+    toast('已清空');
+  }
+}
+
+// ========== WEATHER ==========
+const WMO_CODES = {
+  0:{icon:'☀️',desc:'晴天'}, 1:{icon:'🌤️',desc:'少云'}, 2:{icon:'⛅',desc:'多云'},
+  3:{icon:'☁️',desc:'阴天'}, 45:{icon:'🌫️',desc:'雾'}, 48:{icon:'🌫️',desc:'雾凇'},
+  51:{icon:'🌦️',desc:'小毛毛雨'}, 53:{icon:'🌦️',desc:'毛毛雨'}, 55:{icon:'🌧️',desc:'大毛毛雨'},
+  61:{icon:'🌧️',desc:'小雨'}, 63:{icon:'🌧️',desc:'中雨'}, 65:{icon:'🌧️',desc:'大雨'},
+  71:{icon:'❄️',desc:'小雪'}, 73:{icon:'❄️',desc:'中雪'}, 75:{icon:'❄️',desc:'大雪'},
+  80:{icon:'🌦️',desc:'阵雨'}, 81:{icon:'🌧️',desc:'中阵雨'}, 82:{icon:'⛈️',desc:'大阵雨'},
+  85:{icon:'🌨️',desc:'阵雪'}, 86:{icon:'🌨️',desc:'大阵雪'},
+  95:{icon:'⛈️',desc:'雷暴'}, 96:{icon:'⛈️',desc:'雷暴冰雹'}, 99:{icon:'⛈️',desc:'大雷暴冰雹'},
+};
+
+function getUVLevel(idx) {
+  if (idx <= 2) return {level:'低', color:'#4CAF50', cls:''};
+  if (idx <= 5) return {level:'中等', color:'#FF9800', cls:''};
+  if (idx <= 7) return {level:'高', color:'#F44336', cls:'high'};
+  if (idx <= 10) return {level:'很高', color:'#C62828', cls:'high'};
+  return {level:'极高', color:'#9C27B0', cls:'high'};
+}
+
+function getPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) { reject(new Error('不支持定位')); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({lat:pos.coords.latitude, lon:pos.coords.longitude}),
+      err => reject(err),
+      {enableHighAccuracy:false, timeout:10000, maximumAge:600000}
+    );
+  });
+}
+
+function fetchWeather(lat, lon) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+    `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m` +
+    `&daily=temperature_2m_max,temperature_2m_min,weather_code,uv_index_max,precipitation_probability_max` +
+    `&timezone=auto&forecast_days=5`;
+  return fetch(url).then(r => r.json());
+}
+
+let weatherCache = null;
+let weatherCacheTime = 0;
+
+async function loadWeather(forceRefresh) {
+  const now = Date.now();
+  if (!forceRefresh && weatherCache && (now - weatherCacheTime) < 1800000) {
+    return weatherCache;
+  }
+  const pos = await getPosition();
+  const data = await fetchWeather(pos.lat, pos.lon);
+  weatherCache = data;
+  weatherCacheTime = now;
+  return data;
+}
+
+function updateHomeWeather() {
+  if (!weatherCache) return;
+  try {
+    const c = weatherCache.current;
+    const d = weatherCache.daily;
+    const w = WMO_CODES[c.weather_code] || {icon:'🌡️',desc:'未知'};
+    document.getElementById('homeWeatherTemp').textContent = `${Math.round(c.temperature_2m)}°`;
+    document.getElementById('homeWeatherDesc').textContent = w.desc;
+    const uvBadge = document.getElementById('homeUVBadge');
+    if (d.uv_index_max && d.uv_index_max[0] !== undefined) {
+      const uv = d.uv_index_max[0];
+      const lvl = getUVLevel(uv);
+      uvBadge.style.display = 'inline';
+      uvBadge.textContent = `UV ${uv} ${lvl.level}`;
+      uvBadge.className = `uv-badge ${lvl.cls}`;
+    }
+  } catch(e) {}
+}
+
+async function renderWeather() {
+  const el = document.getElementById('weatherContent');
+  el.innerHTML = `<div style="text-align:center;padding:40px 0;color:var(--text-light);">
+    <div style="font-size:32px;margin-bottom:8px;">🌤️</div>加载天气中...
+  </div>`;
+
+  try {
+    const data = await loadWeather(true);
+    const c = data.current;
+    const d = data.daily;
+    const w = WMO_CODES[c.weather_code] || {icon:'🌡️',desc:'未知'};
+    const uvToday = d.uv_index_max?.[0];
+    const uvLvl = uvToday !== undefined ? getUVLevel(uvToday) : null;
+
+    const days = ['日','一','二','三','四','五','六'];
+    const forecastHtml = d.time.slice(0, 5).map((t, i) => {
+      const date = new Date(t + 'T00:00:00');
+      const dayLabel = i === 0 ? '今天' : `周${days[date.getDay()]}`;
+      const fw = WMO_CODES[d.weather_code[i]] || {icon:'🌡️'};
+      return `<div class="forecast-day">
+        <div class="fday">${dayLabel}</div>
+        <div class="ficon">${fw.icon}</div>
+        <div class="fhi">${Math.round(d.temperature_2m_max[i])}°</div>
+        <div class="flo">${Math.round(d.temperature_2m_min[i])}°</div>
+      </div>`;
+    }).join('');
+
+    const uvMeterHtml = uvToday !== undefined ? `
+      <div class="weather-detail-item" style="grid-column:1/-1;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span class="lbl" style="margin:0">紫外线指数</span>
+          <span class="val" style="font-size:18px;color:${uvLvl.color}">${uvToday} · ${uvLvl.level}</span>
+        </div>
+        <div class="uv-meter">
+          <div class="uv-meter-dot" style="left:${Math.min(100, uvToday/11*100)}%"></div>
+        </div>
+        <div class="uv-level" style="color:${uvLvl.color}">
+          ${uvToday <= 2 ? '无需防护' : uvToday <= 5 ? '建议涂防晒' : uvToday <= 7 ? '需防晒+遮阳' : '尽量避免暴晒！'}
+        </div>
+      </div>` : '';
+
+    el.innerHTML = `
+      <div class="weather-main">
+        <div style="font-size:48px;">${w.icon}</div>
+        <div class="big-temp">${Math.round(c.temperature_2m)}°</div>
+        <div class="big-desc">${w.desc}</div>
+        <div class="hi-lo">体感 ${Math.round(c.apparent_temperature)}° · 湿度 ${c.relative_humidity_2m}%</div>
+        <div class="hi-lo" style="margin-top:2px;">🌬 风速 ${c.wind_speed_10m} km/h</div>
+      </div>
+      <div class="weather-detail-grid">
+        <div class="weather-detail-item">
+          <div class="val">${Math.round(d.temperature_2m_max[0])}°</div>
+          <div class="lbl">最高温度</div>
+        </div>
+        <div class="weather-detail-item">
+          <div class="val">${Math.round(d.temperature_2m_min[0])}°</div>
+          <div class="lbl">最低温度</div>
+        </div>
+        <div class="weather-detail-item">
+          <div class="val">${d.precipitation_probability_max?.[0] ?? '--'}%</div>
+          <div class="lbl">降水概率</div>
+        </div>
+        <div class="weather-detail-item">
+          <div class="val">${c.relative_humidity_2m}%</div>
+          <div class="lbl">湿度</div>
+        </div>
+        ${uvMeterHtml}
+      </div>
+      <div class="section-title">5日预报</div>
+      <div class="weather-forecast">${forecastHtml}</div>
+      <button class="btn-locate" onclick="renderWeather()" style="margin-top:16px;">🔄 刷新天气数据</button>
+    `;
+    updateHomeWeather();
+  } catch(e) {
+    el.innerHTML = `
+      <div style="text-align:center;padding:40px 0;">
+        <div style="font-size:48px;margin-bottom:12px;">📍</div>
+        <h3>需要位置权限</h3>
+        <p style="color:var(--text-light);font-size:14px;margin:8px 0 16px;">
+          请允许浏览器获取您的位置以显示本地天气
+        </p>
+        <button class="btn-locate" onclick="renderWeather()">🔍 重新获取位置</button>
+      </div>
+    `;
+  }
+}
+
+// Try to preload weather on init
+function initWeather() {
+  loadWeather(false).then(() => updateHomeWeather()).catch(() => {});
+}
+
+// ========== PWA Registration ==========
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+// ========== INIT ==========
+function init() {
+  refreshHome();
+  initWeather();
+
+  // Handle Enter key for plan inputs
+  document.getElementById('mustDoInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addPlanItem('must');
+  });
+  document.getElementById('todoInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addPlanItem('todo');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
