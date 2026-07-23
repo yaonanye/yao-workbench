@@ -1,13 +1,12 @@
-// Service Worker for 姚小八工作台 PWA
-const CACHE_NAME = 'yao-workbench-v2';
-const BASE = './';
+// Service Worker for 每日助手 PWA
+const CACHE_NAME = 'daily-assistant-v1';
 const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/apple-touch-icon.png'
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/apple-touch-icon.png'
 ];
 
 // Install: cache all assets
@@ -33,6 +32,7 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(event.request)
       .then(response => {
+        // Cache successful GET requests
         if (event.request.method === 'GET' && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));

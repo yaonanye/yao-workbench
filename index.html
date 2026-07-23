@@ -420,6 +420,9 @@ html, body {
 <!-- ========== HOME PAGE ========== -->
 <div class="page active" id="page-home">
   <div class="home-header">
+    <div style="position:absolute;top:calc(12px + var(--safe-top));right:16px;">
+      <button onclick="goPage('settings')" style="width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.8);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">⚙️</button>
+    </div>
     <div class="app-icon"><span>姚</span></div>
     <h1>姚小八工作台</h1>
     <p class="subtitle">高效生活 · 每日精进</p>
@@ -554,6 +557,16 @@ html, body {
   <div class="page-content" id="memoContent"></div>
 </div>
 
+<!-- ========== SETTINGS PAGE ========== -->
+<div class="page" id="page-settings">
+  <div class="topbar">
+    <button class="back-btn" onclick="goPage('home')">←</button>
+    <span class="title">设置 · 云同步</span>
+    <div style="width:36px"></div>
+  </div>
+  <div class="page-content" id="settingsContent"></div>
+</div>
+
 <script>
 // ===== UTILITIES =====
 function toast(msg) {
@@ -573,6 +586,7 @@ function goPage(name) {
   if (name === 'movie') renderMovie();
   if (name === 'weather') renderWeather();
   if (name === 'memo') renderMemo();
+  if (name === 'settings') renderSettings();
   window.scrollTo(0, 0);
 }
 
@@ -1514,10 +1528,134 @@ function initWeather() {
   loadWeather(false).then(() => updateHomeWeather()).catch(() => {});
 }
 
+// ========== SETTINGS & DATA BACKUP ==========
+function loadSettings() {
+  try { return JSON.parse(localStorage.getItem('yao_settings') || '{"lastBackup":""}'); }
+  catch(e) { return {lastBackup:''}; }
+}
+function saveSettings(s) { localStorage.setItem('yao_settings', JSON.stringify(s)); }
+
+function collectAllData() {
+  const keys = ['yao_plan','yao_eng_mem','yao_movie','yao_baduanjin','yao_memos','yao_settings'];
+  const data = {};
+  keys.forEach(k => {
+    const v = localStorage.getItem(k);
+    if (v) data[k] = v;
+  });
+  data._backupTime = new Date().toISOString();
+  return data;
+}
+
+function restoreAllData(data) {
+  if (!data || typeof data !== 'object') return false;
+  Object.keys(data).forEach(k => {
+    if (k === '_backupTime') return;
+    if (typeof data[k] === 'string') localStorage.setItem(k, data[k]);
+  });
+  return true;
+}
+
+function exportData() {
+  const data = collectAllData();
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}`;
+  a.download = `姚小八备份_${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  const s = loadSettings();
+  s.lastBackup = data._backupTime;
+  saveSettings(s);
+  toast('✅ 备份文件已下载');
+  setTimeout(() => renderSettings(), 500);
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data._backupTime) { toast('❌ 不是有效的备份文件'); return; }
+        if (!confirm(`备份时间：${data._backupTime}\n确定恢复吗？当前数据将被覆盖。`)) return;
+        restoreAllData(data);
+        toast('✅ 数据恢复成功！');
+        refreshHome();
+        setTimeout(() => renderSettings(), 800);
+      } catch(err) {
+        toast('❌ 文件解析失败');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function renderSettings() {
+  const s = loadSettings();
+  const el = document.getElementById('settingsContent');
+  const lastBackup = s.lastBackup ? new Date(s.lastBackup).toLocaleString('zh-CN') : '从未备份';
+
+  el.innerHTML = `
+    <div class="section-title">数据备份与恢复</div>
+    <div style="background:var(--card);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <p style="font-size:13px;color:var(--text-light);line-height:1.6;margin-bottom:14px;">
+        🕐 上次备份：${lastBackup}<br><br>
+        💡 建议：每隔几天备份一次，文件会保存到手机「文件」App 中
+      </p>
+      <button onclick="exportData()" style="width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px;">
+        ☁️ 备份数据（下载文件）
+      </button>
+      <button onclick="importData()" style="width:100%;padding:14px;background:var(--orange);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">
+        📥 恢复数据（导入文件）
+      </button>
+    </div>
+
+    <div class="section-title">使用说明</div>
+    <div style="background:var(--card);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <div style="font-size:13px;color:var(--text);line-height:2;">
+        <b>📱 如何备份：</b><br>
+        点「备份数据」→ 选择保存到「文件」App<br>
+        建议保存到 iCloud Drive，多设备共享<br><br>
+        <b>🔄 如何恢复：</b><br>
+        点「恢复数据」→ 选择之前的备份文件<br>
+        所有数据将恢复到备份时的状态<br><br>
+        <b>⚠️ 什么时候需要备份：</b><br>
+        • 清理手机缓存之前<br>
+        • 换新手机之前<br>
+        • 每隔几天定期备份<br>
+      </div>
+    </div>
+
+    <div class="section-title">关于</div>
+    <div style="background:var(--card);border-radius:var(--radius-sm);padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+      <div style="font-size:13px;color:var(--text-light);line-height:1.8;">
+        <b>姚小八工作台</b> v2.1<br>
+        📋 每日计划 · 📖 英语训练 · 🧘 八段锦<br>
+        🎬 每周电影 · 🌤️ 今日天气 · 📝 备忘录<br><br>
+        数据存储：本地 + 文件备份<br>
+        在线地址：yaonanye.github.io/yao-workbench
+      </div>
+    </div>
+  `;
+}
+
 // ========== PWA Registration ==========
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
 
