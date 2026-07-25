@@ -561,6 +561,86 @@ body { background-color: #FFDAB9; }
 }
 .memo-item.done .memo-text { text-decoration: line-through; color: var(--text-light); }
 
+/* ===== INSPIRATION ===== */
+.insp-input-wrap {
+  background: var(--card);
+  backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-lg);
+  padding: 14px; margin-bottom: 16px;
+  box-shadow: var(--shadow-soft);
+}
+.insp-input-wrap textarea {
+  width: 100%; min-height: 80px; resize: none;
+  border: none; background: rgba(255,255,255,0.4);
+  border-radius: var(--radius-sm);
+  padding: 12px; font-size: 15px; line-height: 1.6;
+  color: var(--text); font-family: inherit;
+  outline: none;
+}
+.insp-input-wrap textarea:focus { background: rgba(255,255,255,0.6); }
+.insp-tag-row {
+  display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;
+  align-items: center;
+}
+.insp-tag {
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 12px; border: 1px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.3); color: var(--text-mid);
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.insp-tag.active { background: var(--lavender); color: #fff; border-color: var(--lavender); }
+.insp-add-btn {
+  margin-left: auto; padding: 7px 18px;
+  background: linear-gradient(135deg, var(--lavender), #9B7DD0);
+  color: #fff; border: none; border-radius: 20px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.insp-add-btn:active { opacity: 0.85; }
+.insp-search {
+  width: 100%; padding: 10px 14px; margin-bottom: 12px;
+  border: 1px solid rgba(255,255,255,0.4);
+  background: var(--card); backdrop-filter: blur(10px);
+  border-radius: var(--radius-md); font-size: 14px;
+  color: var(--text); outline: none;
+}
+.insp-search:focus { border-color: var(--lavender); }
+.insp-card {
+  background: var(--card);
+  backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-md);
+  padding: 14px; margin-bottom: 10px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+}
+.insp-card.starred { border-color: rgba(177, 156, 217, 0.5); }
+.insp-card-text {
+  font-size: 15px; line-height: 1.6; word-break: break-word;
+  color: var(--text); white-space: pre-wrap;
+}
+.insp-card-meta {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 10px; font-size: 11px; color: var(--text-light);
+}
+.insp-card-tag {
+  padding: 2px 8px; border-radius: 10px;
+  background: var(--lavender-soft); color: var(--lavender);
+  font-size: 11px; font-weight: 500;
+}
+.insp-star {
+  cursor: pointer; font-size: 16px; opacity: 0.4;
+  transition: all 0.2s; user-select: none;
+}
+.insp-star.on { opacity: 1; }
+.insp-del {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: none; background: rgba(255,255,255,0.5);
+  color: var(--text-light); cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
 /* ===== SETTINGS ===== */
 .settings-card {
   background: var(--card);
@@ -682,6 +762,11 @@ body { background-color: #FFDAB9; }
     <div class="di-icon" style="background:var(--sage-soft)">🏃</div>
     <div class="di-label">运动打卡</div>
   </div>
+  <div class="drawer-item" onclick="closeDrawer(); goPage('inspiration')">
+    <div class="di-icon" style="background:var(--lavender-soft)">💡</div>
+    <div class="di-label">灵感记录</div>
+    <div class="di-badge" id="drBadgeInsp">0</div>
+  </div>
   <div class="drawer-item" onclick="closeDrawer(); goPage('weather')">
     <div class="di-icon" style="background:var(--sky-soft)">🌤️</div>
     <div class="di-label">今日天气</div>
@@ -790,6 +875,14 @@ body { background-color: #FFDAB9; }
         </div>
         <div class="mb" style="background:var(--sage-soft);color:var(--sage)" id="homeFitnessBadge">0天</div>
       </div>
+      <div class="mod-card" onclick="goPage('inspiration')">
+        <div class="mi" style="background:var(--lavender-soft)">💡</div>
+        <div class="mc">
+          <div class="mn">灵感记录</div>
+          <div class="md" id="homeInspDesc">随手记录闪念</div>
+        </div>
+        <div class="mb" style="background:var(--lavender-soft);color:var(--lavender)" id="homeInspBadge">0</div>
+      </div>
     </div>
   </div>
 </div>
@@ -891,6 +984,16 @@ body { background-color: #FFDAB9; }
   <div class="page-content" id="fitnessContent"></div>
 </div>
 
+<!-- ========== INSPIRATION PAGE ========== -->
+<div class="page" id="page-inspiration">
+  <div class="topbar">
+    <button class="menu-btn" onclick="openDrawer()">☰</button>
+    <div class="title">灵感记录</div>
+    <div class="right"></div>
+  </div>
+  <div class="page-content" id="inspirationContent"></div>
+</div>
+
 <!-- ========== SETTINGS PAGE ========== -->
 <div class="page" id="page-settings">
   <div class="topbar">
@@ -954,6 +1057,7 @@ function goPage(name) {
   if (name === 'weather') renderWeather();
   if (name === 'settings') renderSettings();
   if (name === 'fitness') renderFitness();
+  if (name === 'inspiration') renderInspiration();
   setTimeout(() => {
     const pc = target?.querySelector('.page-content');
     if (pc) pc.scrollTop = 0;
@@ -1745,6 +1849,163 @@ function clearAllMemos() {
   }
 }
 
+// ========== INSPIRATION ==========
+const INSP_TAGS = [
+  {key:'idea', label:'💡 想法'},
+  {key:'creative', label:'🎨 创意'},
+  {key:'note', label:'📝 随笔'},
+  {key:'todo', label:'📌 待办'},
+  {key:'other', label:'✨ 其他'}
+];
+let inspSelectedTag = 'idea';
+let inspSearchQuery = '';
+
+function loadInspirations() {
+  try { return JSON.parse(localStorage.getItem('yao_inspirations') || '[]'); }
+  catch(e) { return []; }
+}
+function saveInspirations(arr) { localStorage.setItem('yao_inspirations', JSON.stringify(arr)); }
+
+function renderInspiration() {
+  const list = loadInspirations();
+  const el = document.getElementById('inspirationContent');
+
+  const tagHtml = INSP_TAGS.map(t =>
+    `<div class="insp-tag ${inspSelectedTag===t.key?'active':''}" onclick="selectInspTag('${t.key}')">${t.label}</div>`
+  ).join('');
+
+  let filtered = list;
+  if (inspSearchQuery) {
+    const q = inspSearchQuery.toLowerCase();
+    filtered = list.filter(i => i.text.toLowerCase().includes(q) || (i.tagLabel||'').toLowerCase().includes(q));
+  }
+  // starred first, then by time desc
+  filtered.sort((a,b) => {
+    if (a.star !== b.star) return b.star ? 1 : -1;
+    return b.ts - a.ts;
+  });
+
+  const listHtml = filtered.length === 0
+    ? `<div style="text-align:center;padding:40px 0;color:var(--text-light);font-size:14px;">${inspSearchQuery ? '没有匹配的灵感' : '还没有记录灵感<br>闪过脑海的点子，随手记下来 ✨'}</div>`
+    : filtered.map(i => {
+      const tag = INSP_TAGS.find(t => t.key === i.tag) || INSP_TAGS[4];
+      return `<div class="insp-card ${i.star?'starred':''}">
+        <div class="insp-card-text">${escHtml(i.text)}</div>
+        <div class="insp-card-meta">
+          <span class="insp-card-tag">${tag.label}</span>
+          <span>${i.time}</span>
+          <span class="insp-star ${i.star?'on':''}" onclick="toggleInspStar(${i.id})">${i.star?'⭐':'☆'}</span>
+          <button class="insp-del" onclick="deleteInspiration(${i.id})" style="margin-left:auto;">×</button>
+        </div>
+      </div>`;
+    }).join('');
+
+  el.innerHTML = `
+    <div class="insp-input-wrap">
+      <textarea id="inspInput" placeholder="写下你的灵感、想法、创意..." oninput="autoGrow(this)"></textarea>
+      <div class="insp-tag-row">
+        ${tagHtml}
+        <button class="insp-add-btn" onclick="addInspiration()">记录</button>
+      </div>
+    </div>
+    <input type="text" class="insp-search" placeholder="🔍 搜索灵感..." value="${escHtml(inspSearchQuery)}" oninput="searchInspiration(this.value)">
+    <div class="section-title">灵感 (${filtered.length}${list.length!==filtered.length?'/'+list.length:''})</div>
+    ${listHtml}
+    ${list.length > 0 ? `<button onclick="clearAllInspirations()" style="width:100%;padding:10px;background:none;border:1px solid var(--rose-soft);border-radius:var(--radius-md);color:var(--rose);font-size:13px;cursor:pointer;margin-top:16px;">🗑 清空全部</button>` : ''}
+  `;
+}
+
+function autoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.max(80, el.scrollHeight) + 'px';
+}
+
+function selectInspTag(key) {
+  inspSelectedTag = key;
+  renderInspiration();
+  // restore textarea content
+  const ta = document.getElementById('inspInput');
+  if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+}
+
+function addInspiration() {
+  const ta = document.getElementById('inspInput');
+  const text = ta.value.trim();
+  if (!text) { toast('请先写点什么'); return; }
+  const list = loadInspirations();
+  const now = new Date();
+  const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+  list.push({
+    id: Date.now(),
+    text, tag: inspSelectedTag,
+    time: timeStr, ts: now.getTime(),
+    star: false
+  });
+  saveInspirations(list);
+  updateHomeInspiration();
+  renderInspiration();
+  toast('✨ 灵感已记录');
+}
+
+function toggleInspStar(id) {
+  const list = loadInspirations();
+  const item = list.find(i => i.id === id);
+  if (item) {
+    item.star = !item.star;
+    saveInspirations(list);
+    updateHomeInspiration();
+    renderInspiration();
+  }
+}
+
+function deleteInspiration(id) {
+  let list = loadInspirations();
+  list = list.filter(i => i.id !== id);
+  saveInspirations(list);
+  updateHomeInspiration();
+  renderInspiration();
+  toast('已删除');
+}
+
+function searchInspiration(q) {
+  inspSearchQuery = q;
+  // only re-render the list part to keep focus
+  const el = document.getElementById('inspirationContent');
+  // re-render fully but keep search input focused by restoring after
+  renderInspiration();
+  const search = el.querySelector('.insp-search');
+  if (search) {
+    search.focus();
+    search.setSelectionRange(search.value.length, search.value.length);
+  }
+}
+
+function clearAllInspirations() {
+  if (confirm('确定要清空所有灵感记录吗？此操作不可撤销。')) {
+    saveInspirations([]);
+    updateHomeInspiration();
+    renderInspiration();
+    toast('已清空');
+  }
+}
+
+function updateHomeInspiration() {
+  const list = loadInspirations();
+  const desc = document.getElementById('homeInspDesc');
+  const badge = document.getElementById('homeInspBadge');
+  const drBadge = document.getElementById('drBadgeInsp');
+  const starred = list.filter(i => i.star).length;
+  if (list.length === 0) {
+    if (desc) desc.textContent = '随手记录闪念';
+    if (badge) badge.textContent = '0';
+  } else {
+    const latest = list[list.length - 1];
+    if (desc) desc.textContent = (latest.text.substring(0, 18) + (latest.text.length > 18 ? '...' : '')) || '随手记录闪念';
+    if (badge) badge.textContent = starred > 0 ? `★${starred}` : String(list.length);
+  }
+  if (drBadge) drBadge.textContent = list.length;
+}
+
 // ========== MOVIE ==========
 function getWeekNumber() {
   const now = new Date();
@@ -2113,7 +2374,7 @@ function updateHomeFitness() {
 
 // ========== SETTINGS & DATA BACKUP ==========
 function collectAllData() {
-  const keys = ['yao_plan','yao_eng_mem','yao_movie','yao_baduanjin','yao_memos','yao_settings','yao_quote_idx','yao_avatar','yao_fitness'];
+  const keys = ['yao_plan','yao_eng_mem','yao_movie','yao_baduanjin','yao_memos','yao_settings','yao_quote_idx','yao_avatar','yao_fitness','yao_inspirations'];
   const data = {};
   keys.forEach(k => {
     const v = localStorage.getItem(k);
@@ -2256,6 +2517,7 @@ function refreshHome() {
   updateHomeMemo();
   updateHomeWeather();
   updateHomeFitness();
+  updateHomeInspiration();
 
   // Update drawer badges
   const drBadgePlan = document.getElementById('drBadgePlan');
