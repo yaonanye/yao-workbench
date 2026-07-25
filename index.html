@@ -667,6 +667,17 @@ body { background-color: #FFDAB9; }
 
     <div class="section-title">功能模块</div>
     <div class="mod-list">
+      <div class="mod-card" onclick="goPage('weather')">
+        <div class="mi" style="background:var(--sky-soft)">🌤️</div>
+        <div class="mc">
+          <div class="mn">今日天气</div>
+          <div class="md weather-home">
+            <span class="temp" id="homeWeatherTemp">--°</span>
+            <span class="desc" id="homeWeatherDesc">点击查看</span>
+            <span class="uv-badge" id="homeUVBadge" style="display:none">UV --</span>
+          </div>
+        </div>
+      </div>
       <div class="mod-card" onclick="goPage('plan')">
         <div class="mi" style="background:var(--sage-soft)">📋</div>
         <div class="mc">
@@ -698,17 +709,6 @@ body { background-color: #FFDAB9; }
           <div class="md" id="homeMemoPreview">暂无备忘</div>
         </div>
         <div class="mb" style="background:var(--warm-3);color:var(--accent-dark)" id="homeMemoCount">0</div>
-      </div>
-      <div class="mod-card" onclick="goPage('weather')">
-        <div class="mi" style="background:var(--sky-soft)">🌤️</div>
-        <div class="mc">
-          <div class="mn">今日天气</div>
-          <div class="md weather-home">
-            <span class="temp" id="homeWeatherTemp">--°</span>
-            <span class="desc" id="homeWeatherDesc">点击查看</span>
-            <span class="uv-badge" id="homeUVBadge" style="display:none">UV --</span>
-          </div>
-        </div>
       </div>
       <div class="mod-card" onclick="goPage('movie')">
         <div class="mi" style="background:var(--lavender-soft)">🎬</div>
