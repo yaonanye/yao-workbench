@@ -143,6 +143,19 @@ body { background-color: #FFDAB9; }
   color: var(--text);
 }
 .topbar .right { width: 36px; }
+.topbar .avatar-wrap { width: 40px; height: 40px; cursor: pointer; }
+.topbar .avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--warm-3), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 16px; font-weight: 600;
+  overflow: hidden; border: 2px solid rgba(255,255,255,0.6);
+  box-shadow: 0 2px 8px rgba(217,119,87,0.2);
+  transition: transform 0.15s;
+  background-size: cover; background-position: center;
+}
+.topbar .avatar:active { transform: scale(0.92); }
+.topbar .avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 /* Page Content */
 .page-content {
@@ -596,7 +609,9 @@ body { background-color: #FFDAB9; }
   <div class="topbar">
     <button class="menu-btn" onclick="openDrawer()">☰</button>
     <div class="title"></div>
-    <div class="right"></div>
+    <div class="avatar-wrap" onclick="changeAvatar()">
+      <div class="avatar" id="homeAvatar">姚</div>
+    </div>
   </div>
   <div class="page-content">
     <div class="home-greeting">
@@ -1828,7 +1843,7 @@ async function updateHomeLocation() {
 
 // ========== SETTINGS & DATA BACKUP ==========
 function collectAllData() {
-  const keys = ['yao_plan','yao_eng_mem','yao_movie','yao_baduanjin','yao_memos','yao_settings','yao_quote_idx'];
+  const keys = ['yao_plan','yao_eng_mem','yao_movie','yao_baduanjin','yao_memos','yao_settings','yao_quote_idx','yao_avatar'];
   const data = {};
   keys.forEach(k => {
     const v = localStorage.getItem(k);
@@ -1944,6 +1959,7 @@ function renderSettings() {
 // ========== HOME ==========
 function refreshHome() {
   updateHomeDate();
+  updateHomeAvatar();
   const idx = loadQuoteIdx();
   const qt = document.getElementById('quoteText');
   if (qt) qt.textContent = quotes[idx];
@@ -1990,10 +2006,74 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// ========== AVATAR ==========
+function loadAvatar() {
+  return localStorage.getItem('yao_avatar') || '';
+}
+function saveAvatar(data) { localStorage.setItem('yao_avatar', data); }
+
+function updateHomeAvatar() {
+  const el = document.getElementById('homeAvatar');
+  if (!el) return;
+  const avatar = loadAvatar();
+  if (avatar) {
+    el.innerHTML = `<img src="${avatar}" alt="头像">`;
+    el.style.background = 'none';
+  } else {
+    el.textContent = '姚';
+    el.style.background = 'linear-gradient(135deg, var(--warm-3), var(--accent))';
+  }
+  // Also update drawer avatar
+  const drAv = document.querySelector('.drawer-avatar');
+  if (drAv) {
+    if (avatar) {
+      drAv.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="头像">`;
+      drAv.style.background = 'none';
+    } else {
+      drAv.textContent = '姚';
+      drAv.style.background = 'linear-gradient(135deg, var(--warm-3), var(--accent))';
+    }
+  }
+}
+
+function changeAvatar() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      // Resize image to max 200x200 to keep localStorage small
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const size = 200;
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        // Crop to square (center crop)
+        const minDim = Math.min(img.width, img.height);
+        const sx = (img.width - minDim) / 2;
+        const sy = (img.height - minDim) / 2;
+        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        saveAvatar(dataUrl);
+        updateHomeAvatar();
+        toast('✅ 头像已更新');
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
 // ========== INIT ==========
 function init() {
   refreshHome();
   initWeather();
+  updateHomeAvatar();
   document.getElementById('mustDoInput')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') addPlanItem('must');
   });
