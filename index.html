@@ -574,6 +574,66 @@ body { background-color: #FFDAB9; }
   font-size: 13px; color: var(--text-mid); line-height: 1.6; margin-bottom: 12px;
 }
 
+/* ===== FITNESS CALENDAR ===== */
+.fit-stats {
+  display: flex; gap: 10px; margin-bottom: 16px;
+}
+.fit-stat {
+  flex: 1; background: var(--card);
+  backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: var(--radius-md); padding: 14px; text-align: center;
+  box-shadow: var(--shadow-soft);
+}
+.fit-stat .val { font-size: 24px; font-weight: 300; color: var(--accent); }
+.fit-stat .lbl { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.fit-stat.streak .val { color: var(--sage); }
+
+.cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cal-month {
+  font-size: 18px; font-weight: 700; color: var(--text);
+}
+.cal-nav {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.5); border: none;
+  font-size: 18px; cursor: pointer; color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+}
+.cal-nav:active { background: rgba(255,255,255,0.8); }
+.cal-weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+  margin-bottom: 6px;
+}
+.cal-weekday {
+  text-align: center; font-size: 12px; color: var(--text-light);
+  font-weight: 600; padding: 4px 0;
+}
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+}
+.cal-day {
+  aspect-ratio: 1; border-radius: 10px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--text); cursor: pointer;
+  background: rgba(255,255,255,0.35);
+  border: 1.5px solid transparent;
+  transition: all 0.15s; position: relative;
+}
+.cal-day:active { transform: scale(0.92); }
+.cal-day.empty { background: transparent; cursor: default; }
+.cal-day.today { border-color: var(--accent); font-weight: 700; }
+.cal-day.checked {
+  background: linear-gradient(135deg, var(--sage), #6B9978);
+  color: #fff;
+}
+.cal-day.checked::after {
+  content: '✓'; font-size: 10px; position: absolute; bottom: 2px;
+}
+.cal-day.future { opacity: 0.35; cursor: default; }
+
 /* Responsive */
 @media (min-width: 600px) {
   .page-wrap { max-width: 480px; margin: 0 auto; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
@@ -617,6 +677,10 @@ body { background-color: #FFDAB9; }
   <div class="drawer-item" onclick="closeDrawer(); goPage('movie')">
     <div class="di-icon" style="background:var(--lavender-soft)">🎬</div>
     <div class="di-label">每周电影</div>
+  </div>
+  <div class="drawer-item" onclick="closeDrawer(); goPage('fitness')">
+    <div class="di-icon" style="background:var(--sage-soft)">🏃</div>
+    <div class="di-label">运动打卡</div>
   </div>
   <div class="drawer-item" onclick="closeDrawer(); goPage('weather')">
     <div class="di-icon" style="background:var(--sky-soft)">🌤️</div>
@@ -718,6 +782,14 @@ body { background-color: #FFDAB9; }
         </div>
         <div class="mb" style="background:var(--lavender-soft);color:var(--lavender)" id="homeMovieRating">⭐ --</div>
       </div>
+      <div class="mod-card" onclick="goPage('fitness')">
+        <div class="mi" style="background:var(--sage-soft)">🏃</div>
+        <div class="mc">
+          <div class="mn">运动打卡</div>
+          <div class="md" id="homeFitnessDesc">点击记录今日运动</div>
+        </div>
+        <div class="mb" style="background:var(--sage-soft);color:var(--sage)" id="homeFitnessBadge">0天</div>
+      </div>
     </div>
   </div>
 </div>
@@ -809,6 +881,16 @@ body { background-color: #FFDAB9; }
   <div class="page-content" id="weatherContent"></div>
 </div>
 
+<!-- ========== FITNESS PAGE ========== -->
+<div class="page" id="page-fitness">
+  <div class="topbar">
+    <button class="menu-btn" onclick="openDrawer()">☰</button>
+    <div class="title">运动打卡</div>
+    <div class="right"></div>
+  </div>
+  <div class="page-content" id="fitnessContent"></div>
+</div>
+
 <!-- ========== SETTINGS PAGE ========== -->
 <div class="page" id="page-settings">
   <div class="topbar">
@@ -871,6 +953,7 @@ function goPage(name) {
   if (name === 'movie') renderMovie();
   if (name === 'weather') renderWeather();
   if (name === 'settings') renderSettings();
+  if (name === 'fitness') renderFitness();
   setTimeout(() => {
     const pc = target?.querySelector('.page-content');
     if (pc) pc.scrollTop = 0;
@@ -1879,9 +1962,158 @@ async function updateHomeLocation() {
   }
 }
 
+// ========== FITNESS CALENDAR ==========
+function loadFitnessData() {
+  try { return JSON.parse(localStorage.getItem('yao_fitness') || '{}'); }
+  catch(e) { return {}; }
+}
+function saveFitnessData(d) { localStorage.setItem('yao_fitness', JSON.stringify(d)); }
+
+function isTodayChecked() {
+  const d = loadFitnessData();
+  const today = new Date();
+  const key = `${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getDate().toString().padStart(2,'0')}`;
+  return !!d[key];
+}
+
+function calculateStreak() {
+  const d = loadFitnessData();
+  let streak = 0;
+  const date = new Date();
+  // Check today first, then go backwards
+  while (true) {
+    const key = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}`;
+    if (d[key]) { streak++; date.setDate(date.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
+
+function countMonthChecks(year, month) {
+  const d = loadFitnessData();
+  let count = 0;
+  const prefix = `${year}-${(month+1).toString().padStart(2,'0')}`;
+  Object.keys(d).forEach(k => {
+    if (k.startsWith(prefix) && d[k]) count++;
+  });
+  return count;
+}
+
+let fitnessViewYear, fitnessViewMonth;
+
+function renderFitness() {
+  const now = new Date();
+  if (fitnessViewYear === undefined) {
+    fitnessViewYear = now.getFullYear();
+    fitnessViewMonth = now.getMonth();
+  }
+  const el = document.getElementById('fitnessContent');
+  const streak = calculateStreak();
+  const monthCount = countMonthChecks(fitnessViewYear, fitnessViewMonth);
+  const totalCount = Object.values(loadFitnessData()).filter(Boolean).length;
+
+  const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const weekdays = ['日','一','二','三','四','五','六'];
+
+  const firstDay = new Date(fitnessViewYear, fitnessViewMonth, 1).getDay();
+  const daysInMonth = new Date(fitnessViewYear, fitnessViewMonth + 1, 0).getDate();
+  const today = new Date();
+  const todayKey = `${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getDate().toString().padStart(2,'0')}`;
+
+  const fitnessData = loadFitnessData();
+
+  let daysHtml = '';
+  // Empty cells before day 1
+  for (let i = 0; i < firstDay; i++) {
+    daysHtml += `<div class="cal-day empty"></div>`;
+  }
+  // Days
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = `${fitnessViewYear}-${(fitnessViewMonth+1).toString().padStart(2,'0')}-${d.toString().padStart(2,'0')}`;
+    const checked = fitnessData[key];
+    const isToday = key === todayKey;
+    const cellDate = new Date(fitnessViewYear, fitnessViewMonth, d);
+    const isFuture = cellDate > today && !isToday;
+    let cls = 'cal-day';
+    if (checked) cls += ' checked';
+    if (isToday) cls += ' today';
+    if (isFuture) cls += ' future';
+    daysHtml += `<div class="${cls}" ${isFuture ? '' : `onclick="toggleFitness('${key}')"`}>${d}</div>`;
+  }
+
+  el.innerHTML = `
+    <div class="fit-stats">
+      <div class="fit-stat streak">
+        <div class="val">${streak}</div>
+        <div class="lbl">连续打卡(天)</div>
+      </div>
+      <div class="fit-stat">
+        <div class="val">${monthCount}</div>
+        <div class="lbl">本月打卡(天)</div>
+      </div>
+      <div class="fit-stat">
+        <div class="val">${totalCount}</div>
+        <div class="lbl">累计打卡(天)</div>
+      </div>
+    </div>
+
+    <div class="cal-header">
+      <button class="cal-nav" onclick="changeFitnessMonth(-1)">‹</button>
+      <div class="cal-month">${fitnessViewYear}年 ${monthNames[fitnessViewMonth]}</div>
+      <button class="cal-nav" onclick="changeFitnessMonth(1)">›</button>
+    </div>
+
+    <div class="cal-weekdays">
+      ${weekdays.map(w => `<div class="cal-weekday">${w}</div>`).join('')}
+    </div>
+    <div class="cal-grid">${daysHtml}</div>
+
+    <p style="text-align:center;color:var(--text-light);font-size:13px;margin-top:16px;">
+      点击日期标记/取消运动打卡 🏃<br>
+      绿色 = 已打卡，今天有蓝色边框
+    </p>
+  `;
+}
+
+function toggleFitness(key) {
+  const d = loadFitnessData();
+  d[key] = !d[key];
+  saveFitnessData(d);
+  renderFitness();
+  updateHomeFitness();
+  if (d[key]) {
+    const streak = calculateStreak();
+    toast(`✅ 打卡成功！连续${streak}天 🎉`);
+  } else {
+    toast('已取消打卡');
+  }
+}
+
+function changeFitnessMonth(delta) {
+  fitnessViewMonth += delta;
+  if (fitnessViewMonth < 0) { fitnessViewMonth = 11; fitnessViewYear--; }
+  if (fitnessViewMonth > 11) { fitnessViewMonth = 0; fitnessViewYear++; }
+  renderFitness();
+}
+
+function updateHomeFitness() {
+  const desc = document.getElementById('homeFitnessDesc');
+  const badge = document.getElementById('homeFitnessBadge');
+  if (!desc || !badge) return;
+  const streak = calculateStreak();
+  const todayChecked = isTodayChecked();
+  if (todayChecked) {
+    desc.textContent = `✅ 今日已打卡 · 连续${streak}天`;
+    badge.textContent = `${streak}天`;
+  } else {
+    desc.textContent = '点击记录今日运动';
+    badge.textContent = streak > 0 ? `${streak}天` : '0天';
+  }
+}
+
 // ========== SETTINGS & DATA BACKUP ==========
 function collectAllData() {
-  const keys = ['yao_plan','yao_eng_mem','yao_movie','yao_baduanjin','yao_memos','yao_settings','yao_quote_idx','yao_avatar'];
+  const keys = ['yao_plan','yao_eng_mem','yao_movie','yao_baduanjin','yao_memos','yao_settings','yao_quote_idx','yao_avatar','yao_fitness'];
   const data = {};
   keys.forEach(k => {
     const v = localStorage.getItem(k);
@@ -2023,6 +2255,7 @@ function refreshHome() {
 
   updateHomeMemo();
   updateHomeWeather();
+  updateHomeFitness();
 
   // Update drawer badges
   const drBadgePlan = document.getElementById('drBadgePlan');
