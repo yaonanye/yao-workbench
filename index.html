@@ -143,19 +143,27 @@ body { background-color: #FFDAB9; }
   color: var(--text);
 }
 .topbar .right { width: 36px; }
-.topbar .avatar-wrap { width: 40px; height: 40px; cursor: pointer; }
-.topbar .avatar {
-  width: 40px; height: 40px; border-radius: 50%;
+.home-greeting .big-avatar-wrap {
+  width: 110px; height: 110px; flex-shrink: 0;
+  border-radius: 50%;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 20px rgba(217, 119, 87, 0.15);
+  cursor: pointer;
+}
+.home-greeting .big-avatar {
+  width: 100%; height: 100%; border-radius: 50%;
   background: linear-gradient(135deg, var(--warm-3), var(--accent));
   display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 16px; font-weight: 600;
-  overflow: hidden; border: 2px solid rgba(255,255,255,0.6);
-  box-shadow: 0 2px 8px rgba(217,119,87,0.2);
-  transition: transform 0.15s;
+  color: #fff; font-size: 42px; font-weight: 600;
+  overflow: hidden;
   background-size: cover; background-position: center;
 }
-.topbar .avatar:active { transform: scale(0.92); }
-.topbar .avatar img { width: 100%; height: 100%; object-fit: cover; }
+.home-greeting .big-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.home-greeting .big-avatar-label {
+  text-align: center; font-size: 11px; color: var(--text-light);
+  margin-top: 6px;
+}
 
 /* Page Content */
 .page-content {
@@ -168,10 +176,13 @@ body { background-color: #FFDAB9; }
 /* ===== HOME PAGE ===== */
 .home-greeting {
   padding: 12px 4px 8px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
 }
+.home-greeting .greet-left { flex: 1; min-width: 0; }
 .home-greeting h1 {
-  font-size: 28px; font-weight: 700; color: var(--text);
-  line-height: 1.3; margin-bottom: 8px;
+  font-size: 26px; font-weight: 700; color: var(--text);
+  line-height: 1.25; margin-bottom: 8px;
 }
 .home-greeting .date-row {
   font-size: 18px; font-weight: 600; color: var(--text);
@@ -184,6 +195,27 @@ body { background-color: #FFDAB9; }
 .home-greeting .location {
   font-size: 13px; color: var(--text-light); margin-top: 6px;
   display: flex; align-items: center; gap: 4px;
+}
+.home-greeting .big-avatar-wrap {
+  width: 110px; height: 110px; flex-shrink: 0;
+  border-radius: 50%;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 20px rgba(217, 119, 87, 0.15);
+  cursor: pointer;
+}
+.home-greeting .big-avatar {
+  width: 100%; height: 100%; border-radius: 50%;
+  background: linear-gradient(135deg, var(--warm-3), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 42px; font-weight: 600;
+  overflow: hidden;
+  background-size: cover; background-position: center;
+}
+.home-greeting .big-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.home-greeting .big-avatar-label {
+  text-align: center; font-size: 11px; color: var(--text-light);
+  margin-top: 6px;
 }
 
 /* Quote card */
@@ -609,16 +641,22 @@ body { background-color: #FFDAB9; }
   <div class="topbar">
     <button class="menu-btn" onclick="openDrawer()">☰</button>
     <div class="title"></div>
-    <div class="avatar-wrap" onclick="changeAvatar()">
-      <div class="avatar" id="homeAvatar">姚</div>
-    </div>
+    <div class="right"></div>
   </div>
   <div class="page-content">
     <div class="home-greeting">
-      <h1>姚小八<br>今天也在努力呀</h1>
-      <div class="date-row" id="homeDate">--月--日 <span class="dot">·</span> 周-</div>
-      <div class="lunar" id="homeLunar"></div>
-      <div class="location" id="homeLocation">📍 定位中...</div>
+      <div class="greet-left">
+        <h1>姚小八<br>今天也在努力呀</h1>
+        <div class="date-row" id="homeDate">--月--日 <span class="dot">·</span> 周-</div>
+        <div class="lunar" id="homeLunar"></div>
+        <div class="location" id="homeLocation">📍 定位中...</div>
+      </div>
+      <div>
+        <div class="big-avatar-wrap" onclick="changeAvatar()">
+          <div class="big-avatar" id="homeBigAvatar">姚</div>
+        </div>
+        <div class="big-avatar-label">点击换头像</div>
+      </div>
     </div>
 
     <div class="quote-card" onclick="nextQuote()">
@@ -2013,7 +2051,7 @@ function loadAvatar() {
 function saveAvatar(data) { localStorage.setItem('yao_avatar', data); }
 
 function updateHomeAvatar() {
-  const el = document.getElementById('homeAvatar');
+  const el = document.getElementById('homeBigAvatar');
   if (!el) return;
   const avatar = loadAvatar();
   if (avatar) {
@@ -2023,7 +2061,6 @@ function updateHomeAvatar() {
     el.textContent = '姚';
     el.style.background = 'linear-gradient(135deg, var(--warm-3), var(--accent))';
   }
-  // Also update drawer avatar
   const drAv = document.querySelector('.drawer-avatar');
   if (drAv) {
     if (avatar) {
