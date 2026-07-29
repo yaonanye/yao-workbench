@@ -118,6 +118,21 @@ body { background-color: #FFDAB9; }
   font-size: 11px; padding: 2px 8px; border-radius: 10px;
   background: var(--accent); color: #fff; font-weight: 600;
 }
+/* Expandable drawer group */
+.drawer-group { margin-bottom: 2px; }
+.drawer-item.expandable .di-arrow {
+  font-size: 12px; color: var(--text-light); transition: transform 0.25s;
+  flex-shrink: 0; margin-left: 4px;
+}
+.drawer-group.open .drawer-item.expandable .di-arrow { transform: rotate(90deg); }
+.drawer-submenu {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.drawer-group.open .drawer-submenu { max-height: 200px; }
+.drawer-submenu .drawer-item {
+  padding-left: 52px; font-size: 14px; opacity: 0.9;
+}
 
 /* Top Bar */
 .topbar {
@@ -745,9 +760,22 @@ body { background-color: #FFDAB9; }
     <div class="di-label">英语训练</div>
     <div class="di-badge" id="drBadgeEng">0</div>
   </div>
-  <div class="drawer-item" onclick="closeDrawer(); goPage('baduanjin')">
-    <div class="di-icon" style="background:var(--warm-2)">🧘</div>
-    <div class="di-label">八段锦</div>
+  <div class="drawer-group" id="healthGroup">
+    <div class="drawer-item expandable" onclick="toggleHealthGroup()">
+      <div class="di-icon" style="background:var(--sage-soft)">🌿</div>
+      <div class="di-label">健康养生</div>
+      <div class="di-arrow">▶</div>
+    </div>
+    <div class="drawer-submenu">
+      <div class="drawer-item" onclick="closeDrawer(); goPage('baduanjin')">
+        <div class="di-icon" style="background:var(--warm-2)">🧘</div>
+        <div class="di-label">八段锦</div>
+      </div>
+      <div class="drawer-item" onclick="closeDrawer(); goPage('fitness')">
+        <div class="di-icon" style="background:var(--sage-soft)">🏃</div>
+        <div class="di-label">运动打卡</div>
+      </div>
+    </div>
   </div>
   <div class="drawer-item" onclick="closeDrawer(); goPage('memo')">
     <div class="di-icon" style="background:var(--warm-3)">📝</div>
@@ -757,10 +785,6 @@ body { background-color: #FFDAB9; }
   <div class="drawer-item" onclick="closeDrawer(); goPage('movie')">
     <div class="di-icon" style="background:var(--lavender-soft)">🎬</div>
     <div class="di-label">每周电影</div>
-  </div>
-  <div class="drawer-item" onclick="closeDrawer(); goPage('fitness')">
-    <div class="di-icon" style="background:var(--sage-soft)">🏃</div>
-    <div class="di-label">运动打卡</div>
   </div>
   <div class="drawer-item" onclick="closeDrawer(); goPage('inspiration')">
     <div class="di-icon" style="background:var(--lavender-soft)">💡</div>
@@ -843,14 +867,6 @@ body { background-color: #FFDAB9; }
         </div>
         <div class="mb" style="background:var(--sky-soft);color:var(--sky)" id="homeEngBadge">--</div>
       </div>
-      <div class="mod-card" onclick="goPage('baduanjin')">
-        <div class="mi" style="background:var(--warm-2)">🧘</div>
-        <div class="mc">
-          <div class="mn">八段锦</div>
-          <div class="md">国体版 · 视频跟练</div>
-        </div>
-        <div class="mb" style="background:var(--warm-2);color:var(--accent-dark)">12分钟</div>
-      </div>
       <div class="mod-card" onclick="goPage('memo')">
         <div class="mi" style="background:var(--warm-3)">📝</div>
         <div class="mc">
@@ -866,6 +882,15 @@ body { background-color: #FFDAB9; }
           <div class="md" id="homeMovieTitle">本周推荐</div>
         </div>
         <div class="mb" style="background:var(--lavender-soft);color:var(--lavender)" id="homeMovieRating">⭐ --</div>
+      </div>
+      <div style="grid-column:1/-1;font-size:12px;color:var(--text-light);font-weight:600;letter-spacing:0.5px;margin:-4px 0 2px 4px;">🌿 健康养生</div>
+      <div class="mod-card" onclick="goPage('baduanjin')">
+        <div class="mi" style="background:var(--warm-2)">🧘</div>
+        <div class="mc">
+          <div class="mn">八段锦</div>
+          <div class="md">国体版 · 视频跟练</div>
+        </div>
+        <div class="mb" style="background:var(--warm-2);color:var(--accent-dark)">12分钟</div>
       </div>
       <div class="mod-card" onclick="goPage('fitness')">
         <div class="mi" style="background:var(--sage-soft)">🏃</div>
@@ -1023,6 +1048,9 @@ function closeDrawer() {
   document.getElementById('drawer').classList.remove('open');
   document.getElementById('drawerOverlay').classList.remove('show');
   document.getElementById('pageWrap').classList.remove('drawer-open');
+}
+function toggleHealthGroup() {
+  document.getElementById('healthGroup').classList.toggle('open');
 }
 
 // Swipe to open drawer
